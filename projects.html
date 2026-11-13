@@ -11,11 +11,21 @@
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/projects.css">
 <script>
-(function(){var d=document.documentElement;d.classList.add('fitted');
-var H=+d.getAttribute('data-stage-h')||800;
-function f(){var w=d.clientWidth,h=innerHeight,s=H>800?w/1280:Math.min(w/1280,h/H);
-d.style.setProperty('--s',Math.min(s,3));d.style.setProperty('--stage-h',H);d.style.setProperty('--ps',w/390)}
-f();addEventListener('resize',f);addEventListener('load',f)})();
+(function () {
+  var d = document.documentElement;
+  d.classList.add('fitted');
+  var stageH = +d.getAttribute('data-stage-h') || 800;
+  function fit() {
+    var w = d.clientWidth, h = innerHeight;
+    var s = stageH > 800 ? w / 1280 : Math.min(w / 1280, h / stageH);
+    d.style.setProperty('--s', Math.min(s, 3));
+    d.style.setProperty('--stage-h', stageH);
+    d.style.setProperty('--ps', w / 390);
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+})();
 </script>
 </head>
 <body>

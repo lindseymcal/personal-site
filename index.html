@@ -11,11 +11,21 @@
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/home.css">
 <script>
-(function(){var d=document.documentElement;d.classList.add('fitted');
-var H=+d.getAttribute('data-stage-h')||800;
-function f(){var w=d.clientWidth,h=innerHeight,s=H>800?w/1280:Math.min(w/1280,h/H);
-d.style.setProperty('--s',Math.min(s,3));d.style.setProperty('--stage-h',H);d.style.setProperty('--ps',w/390)}
-f();addEventListener('resize',f);addEventListener('load',f)})();
+(function () {
+  var d = document.documentElement;
+  d.classList.add('fitted');
+  var stageH = +d.getAttribute('data-stage-h') || 800;
+  function fit() {
+    var w = d.clientWidth, h = innerHeight;
+    var s = stageH > 800 ? w / 1280 : Math.min(w / 1280, h / stageH);
+    d.style.setProperty('--s', Math.min(s, 3));
+    d.style.setProperty('--stage-h', stageH);
+    d.style.setProperty('--ps', w / 390);
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+})();
 </script>
 </head>
 <body>
@@ -24,6 +34,16 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   <div class="floor"></div>
   <div class="rug" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <h1 class="sign">Your Name</h1>
+
+  <a class="obj painting" href="https://art.example.com" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
+    <span class="label" aria-hidden="true">Art site</span>
+  </a>
+
+  <a class="obj postcard" href="https://www.instagram.com/your-handle" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><div class="polaroid"><div></div></div><i class="tape"></i></div>
+    <span class="label" aria-hidden="true">art instagram</span>
+  </a>
 
   <a class="obj shelf" href="books.html" aria-label="Books">
     <div class="art" aria-hidden="true">
@@ -42,16 +62,6 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
       <div class="tabletop"></div><div class="leg" style="left:28px"></div><div class="leg" style="left:354px"></div>
     </div>
     <span class="label" aria-hidden="true">Writing</span>
-  </a>
-
-  <a class="obj painting" href="https://art.example.com" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
-    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
-    <span class="label" aria-hidden="true">Art site</span>
-  </a>
-
-  <a class="obj postcard" href="https://www.instagram.com/your-handle" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener">
-    <div class="art" aria-hidden="true"><div class="polaroid"><div></div></div><i class="tape"></i></div>
-    <span class="label" aria-hidden="true">art instagram</span>
   </a>
 
   <a class="obj peg" href="projects.html" aria-label="Projects">

@@ -1,6 +1,6 @@
 // Turns data into page HTML. Every function returns a string; none of them read files.
 // ALL text that came from a CSV, a JSON file or an essay is passed through escapeHtml before it is written.
-import { escapeHtml as esc, reviewToHtml, selectHomeShelf } from './books.mjs';
+import { escapeHtml as esc, reviewToHtml, selectHomeShelf, MONTHS } from './books.mjs';
 import { packIntoRows, packIntoTiers } from './layout.mjs';
 import { spineStyle, homeSpineWidth, homeSpineHeight, coverFontSize } from './spine.mjs';
 import { substackSubscribeUrl } from './site.mjs';
@@ -8,14 +8,28 @@ import { substackSubscribeUrl } from './site.mjs';
 const FONTS_BASE = 'family=Andika:wght@400;700&family=Patrick+Hand';
 const FONTS_BOOKS = `${FONTS_BASE}&family=Cinzel:wght@500&family=IM+Fell+English+SC&family=Josefin+Sans:wght@600&family=Libre+Baskerville&family=Playfair+Display+SC:wght@700`;
 
-// A tiny script: scale the 1280x800 scene to fit the window (and size the phone wall to the width).
+// A tiny script that scales the 1280x800 scene to fit the window (and sizes the phone wall to the width).
 // The pages still work with no script; they just show the scene at full size.
+//   fitted     class on <html>: switches on the "fit the window" CSS in assets/site.css
+//   --s        scale for the desktop scene: fit both width and height (a taller-than-800 scene fits the width only)
+//   --stage-h  the scene's height in px
+//   --ps       phone-wall scale: window width / 390
 const FIT_SCRIPT = `<script>
-(function(){var d=document.documentElement;d.classList.add('fitted');
-var H=+d.getAttribute('data-stage-h')||800;
-function f(){var w=d.clientWidth,h=innerHeight,s=H>800?w/1280:Math.min(w/1280,h/H);
-d.style.setProperty('--s',Math.min(s,3));d.style.setProperty('--stage-h',H);d.style.setProperty('--ps',w/390)}
-f();addEventListener('resize',f);addEventListener('load',f)})();
+(function () {
+  var d = document.documentElement;
+  d.classList.add('fitted');
+  var stageH = +d.getAttribute('data-stage-h') || 800;
+  function fit() {
+    var w = d.clientWidth, h = innerHeight;
+    var s = stageH > 800 ? w / 1280 : Math.min(w / 1280, h / stageH);
+    d.style.setProperty('--s', Math.min(s, 3));
+    d.style.setProperty('--stage-h', stageH);
+    d.style.setProperty('--ps', w / 390);
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+})();
 </script>`;
 
 // The round brass window (a way back to the study). `base` is '' or '../'.
@@ -23,7 +37,7 @@ function homeWindow(base) {
   return `<a class="home" href="${base}index.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>`;
 }
 
-function document_({ title, base = '', css = [], fonts = FONTS_BASE, htmlClass = '', stageH = 800, scene = true, bodyClass = '', body }) {
+function pageShell({ title, base = '', css = [], fonts = FONTS_BASE, htmlClass = '', stageH = 800, scene = true, bodyClass = '', body }) {
   const tall = scene && stageH > 800;
   const classes = [scene ? 'scene' : '', htmlClass, tall ? 'tall' : ''].filter(Boolean).join(' ');
   return `<!doctype html>
@@ -89,6 +103,16 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
   <div class="rug" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <h1 class="sign">${name}</h1>
 
+  <a class="obj painting" href="${esc(config.artSiteUrl)}" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
+    <span class="label" aria-hidden="true">Art site</span>
+  </a>
+
+  <a class="obj postcard" href="${esc(config.artInstagramUrl)}" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><div class="polaroid"><div></div></div><i class="tape"></i></div>
+    <span class="label" aria-hidden="true">art instagram</span>
+  </a>
+
   <a class="obj shelf" href="books.html" aria-label="Books">
     <div class="art" aria-hidden="true">
       <div class="tier">${deskTiers[0].map(spineTag).join('')}</div>
@@ -106,16 +130,6 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
       <div class="tabletop"></div><div class="leg" style="left:28px"></div><div class="leg" style="left:354px"></div>
     </div>
     <span class="label" aria-hidden="true">Writing</span>
-  </a>
-
-  <a class="obj painting" href="${esc(config.artSiteUrl)}" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
-    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
-    <span class="label" aria-hidden="true">Art site</span>
-  </a>
-
-  <a class="obj postcard" href="${esc(config.artInstagramUrl)}" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener">
-    <div class="art" aria-hidden="true"><div class="polaroid"><div></div></div><i class="tape"></i></div>
-    <span class="label" aria-hidden="true">art instagram</span>
   </a>
 
   <a class="obj peg" href="projects.html" aria-label="Projects">
@@ -172,7 +186,7 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
   <a class="obj linkedin" href="${esc(config.linkedinUrl)}" aria-label="LinkedIn (opens in a new tab)" target="_blank" rel="noopener"><i class="str" aria-hidden="true"></i><span class="l" aria-hidden="true">in</span><span class="tag" aria-hidden="true">LinkedIn</span></a>
 </div></div>`;
 
-  return GENERATED_NOTE + document_({
+  return GENERATED_NOTE + pageShell({
     title: config.name,
     css: ['home'],
     htmlClass: 'p-home',
@@ -206,7 +220,8 @@ function spineHtml(book, st, { lean = false } = {}) {
 
 function pulledBookHtml(book, st) {
   const id = bookDomId(book.id);
-  const hasReview = reviewToHtml(book.review) !== '';
+  const reviewHtml = reviewToHtml(book.review);
+  const hasReview = reviewHtml !== '';
   const fav = book.favorite;
   const dots = dotsHtml(book.rating);
   const row = dots || book.when
@@ -217,10 +232,10 @@ function pulledBookHtml(book, st) {
   const slip = book.recommendedBy ? `<div class="slip"><i>recommended by ${esc(book.recommendedBy)}</i></div>` : '';
   const cover = `<div class="book" style="background:${st.bg};color:${st.text};font-family:'${st.family}'"><i class="frame"></i>${fav ? '<i class="foil" aria-hidden="true"></i>' : ''}<b style="${fav ? 'margin-top:34px;' : ''}font-size:${coverFontSize(book.title)}px${st.caps ? ';text-transform:uppercase' : ''}">${esc(book.spineTitle)}</b><span>${esc(book.author)}</span></div>`;
   const article = hasReview
-    ? `<article class="letter" tabindex="0">\n      ${heading}\n      ${by}\n      ${row}\n      ${reviewToHtml(book.review)}\n    </article>`
+    ? `<article class="letter" tabindex="0">\n      ${heading}\n      ${by}\n      ${row}\n      ${reviewHtml}\n    </article>`
     : `<article class="card">\n      ${heading}\n      ${by}\n      ${row}\n    </article>`;
   return `  <section class="pull" id="b-${id}" aria-label="${esc(`${book.title}, ${book.author}`)}">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-${id}" aria-label="Put the book back"></a>
     ${cover}
     ${slip}
     ${article}
@@ -272,7 +287,7 @@ export function renderBooks({ config, groups, colorFor }) {
     ? `<style>\n${gapSelectors.join(',\n')}{background:transparent!important;background-image:none!important;box-shadow:inset 0 0 0 2px rgba(245,206,122,.55),inset 0 0 22px rgba(245,206,122,.25)}\n${gapSelectors.map((s) => `${s} > *`).join(',\n')}{visibility:hidden}\n</style>`
     : '';
 
-  return GENERATED_NOTE + document_({
+  return GENERATED_NOTE + pageShell({
     title: `Books, ${config.name}`,
     css: ['books'],
     fonts: FONTS_BOOKS,
@@ -295,21 +310,26 @@ ${gapStyle}`,
 
 // --- writing ----------------------------------------------------------------------------------
 
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
+// All the years on one notebook page, inside ONE scroll box (so nothing is clipped however many years there are).
 function tocHtml(groups) {
-  return groups.map((g) => `<div class="page-in">
-        <h2 class="year">${g.year}</h2>
+  if (groups.length === 0) return '';
+  return `<div class="page-in">
+${groups.map((g) => `        <h2 class="year">${g.year}</h2>
         <ul class="toc">
-${g.essays.map((e) => `          <li><a href="writing/${esc(encodeURIComponent(e.slug))}.html">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTH_NAMES[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
-        </ul>
-      </div>`).join('\n      ');
+${g.essays.map((e) => `          <li><a href="writing/${esc(encodeURIComponent(e.slug))}.html">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTHS[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
+        </ul>`).join('\n')}
+      </div>`;
+}
+
+// The quiet Substack link at the end of an essay. The essay's own essay-substack meta tag is the single source.
+export function essayFooterLink(url) {
+  return `<a href="${esc(url)}" target="_blank" rel="noopener"><i class="env" aria-hidden="true"></i><span>Get the next one by email, on Substack<span class="sr"> (opens in a new tab)</span></span></a>`;
 }
 
 export function renderWriting({ config, groups, splitPages }) {
   const { left, right } = splitPages(groups);
   const empty = groups.length === 0 ? '<p class="year">Nothing written here yet.</p>' : '';
-  return GENERATED_NOTE + document_({
+  return GENERATED_NOTE + pageShell({
     title: `Writing, ${config.name}`,
     css: ['writing'],
     htmlClass: 'p-writing',
@@ -335,7 +355,7 @@ export function renderWriting({ config, groups, splitPages }) {
 // --- projects ---------------------------------------------------------------------------------
 
 export function renderProjects({ config, projects }) {
-  return GENERATED_NOTE + document_({
+  return GENERATED_NOTE + pageShell({
     title: `Projects, ${config.name}`,
     css: ['projects'],
     htmlClass: 'p-projects',
@@ -362,7 +382,7 @@ export function renderProject({ config, project: p }) {
     p.built.length ? `<section><h2>What I built</h2><ul>${p.built.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></section>` : '',
     p.learned ? `<section><h2>What I learned</h2><p>${esc(p.learned)}</p></section>` : '',
   ].filter(Boolean).join('\n    ');
-  return GENERATED_NOTE + document_({
+  return GENERATED_NOTE + pageShell({
     title: `${p.title}, ${config.name}`,
     base: '../',
     css: ['project'],

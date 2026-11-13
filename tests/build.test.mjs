@@ -102,7 +102,7 @@ test('every spine opens its own book, and every book can be put back', () => {
   const pulls = html.match(/<section class="pull" id="b-\d+"/g) || [];
   assert.equal(spines.length, pulls.length);
   assert.ok(spines.length > 20);
-  assert.equal((html.match(/href="#shelf"/g) || []).length, pulls.length);
+  assert.equal((html.match(/class="scrim" href="#s-\d+"/g) || []).length, pulls.length); // putting a book back returns focus to its spine
   assert.ok(html.includes('id="shelf"'));
 });
 

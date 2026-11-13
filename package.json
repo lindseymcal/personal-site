@@ -6,8 +6,8 @@
   "description": "Zee's personal site: a lamplit study where every object is a doorway.",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "build": "node scripts/build.mjs",
-    "build:sample": "node scripts/build.mjs tests/fixtures/sample-goodreads.csv",
+    "build": "node scripts/build.mjs \"$HOME/.agent-fleet/goodreads/goodreads_library_export.csv\"",
+    "build:sample": "node scripts/build.mjs tests/fixtures/sample-goodreads.csv --cache tests/fixtures/sample-spine-colors.json",
     "serve": "python3 -m http.server 8080 --bind 127.0.0.1"
   }
 }

@@ -23,6 +23,7 @@ export const DEFAULT_CONFIG = {
   linkedinUrl: 'https://www.linkedin.com/in/your-name',
   substackUrl: 'https://your-name.substack.com',
   resumePath: 'resume.pdf',
+  reviews: 'all', // which reviews to publish: 'all' | 'chosen' | 'none'
 };
 
 export function normalizeConfig(input = {}) {
@@ -33,6 +34,7 @@ export function normalizeConfig(input = {}) {
   for (const key of ['artSiteUrl', 'artInstagramUrl', 'linkedinUrl', 'substackUrl']) {
     c[key] = safeUrl(raw[key], DEFAULT_CONFIG[key]);
   }
+  c.reviews = ['all', 'chosen', 'none'].includes(raw.reviews) ? raw.reviews : DEFAULT_CONFIG.reviews;
   c.resumePath = safeLocalPath(raw.resumePath, DEFAULT_CONFIG.resumePath);
   return c;
 }
@@ -133,4 +135,12 @@ export function groupEssaysByYear(essays) {
 // Years alternate between the left and right page of the notebook (newest on the left).
 export function splitYearsAcrossPages(groups) {
   return { left: groups.filter((_, i) => i % 2 === 0), right: groups.filter((_, i) => i % 2 === 1) };
+}
+
+// The essay footer link sits between two comment markers so the build can regenerate it from the
+// essay's essay-substack meta tag (one place to edit). Returns { html, found }.
+export function applyEssayFooter(html, linkHtml) {
+  const re = /(<!--substack-link-->)[\s\S]*?(<!--\/substack-link-->)/;
+  if (!re.test(html)) return { html, found: false };
+  return { html: html.replace(re, (m, open, close) => `${open}\n      ${linkHtml}\n      ${close}`), found: true };
 }

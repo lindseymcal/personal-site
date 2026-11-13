@@ -1,9 +1,9 @@
-# Goodreads exports: never commit these
+# Goodreads exports: never commit these (only the one fake sample the tests use)
 *.csv
-# but the fake sample used by the tests is fine
-!tests/fixtures/*.csv
-# Add a real résumé on purpose, then remove this line
-resume.pdf
+!tests/fixtures/sample-goodreads.csv
+# PDFs: the résumé is added ON PURPOSE. To publish it, put it in this folder as resume.pdf
+# and add the line "!resume.pdf" below this comment.
+*.pdf
 .DS_Store
 node_modules/
 *.log

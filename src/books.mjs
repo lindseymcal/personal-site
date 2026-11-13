@@ -3,7 +3,7 @@
 //
 // PRIVACY: only the columns named in rowToBook are ever read. "Private Notes" is never touched.
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 // --- escaping -------------------------------------------------------------------------------
 
@@ -133,8 +133,12 @@ export function spineAuthor(authorLastFirst, author) {
 
 export function slugify(text) {
   return String(text ?? '')
-    .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'book';
+}
+
+export function isTruthyFlag(value) {
+  return /^(true|yes|1)$/i.test(String(value ?? '').trim());
 }
 
 // --- row -> book ------------------------------------------------------------------------------
@@ -156,7 +160,8 @@ export function rowToBook(row) {
     pages: parsePages(row['Number of Pages']),
     pubYear: parseYear(row['Original Publication Year']) || parseYear(row['Year Published']),
     rating: parseRating(row['My Rating']),
-    review: String(row['My Review'] ?? ''),
+    // a review Goodreads flags as a spoiler is never published
+    review: isTruthyFlag(row['Spoiler']) ? '' : String(row['My Review'] ?? ''),
     when: when.label,
     year: when.year,
     sortKey: when.sortKey,
@@ -219,4 +224,17 @@ export function selectHomeShelf(books, capacity) {
   const favorites = books.filter((b) => b.favorite).sort(byRecent);
   const others = books.filter((b) => !b.favorite).sort(byRecent);
   return [...favorites, ...others].slice(0, Math.max(0, capacity));
+}
+
+// The site.config.json "reviews" setting decides which reviews are published:
+//   "all"     every review (except spoilers, which rowToBook already removed)
+//   "chosen"  only books with "showReview": true in books-extra.json
+//   "none"    no reviews at all (every book gets the small library card)
+export function applyReviewPolicy(book, mode, extras) {
+  if (mode === 'none') return { ...book, review: '' };
+  if (mode === 'chosen') {
+    const e = extras && Object.hasOwn(extras, book.id) ? extras[book.id] : null;
+    if (!(e && e.showReview === true)) return { ...book, review: '' };
+  }
+  return book;
 }

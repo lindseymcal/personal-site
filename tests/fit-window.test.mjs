@@ -222,7 +222,7 @@ test('study labels: hidden at rest on desktop, shown on keyboard focus; reduced-
   const rest = await tab.eval(`[...document.querySelectorAll('.fit-room .label')].map((e) => +getComputedStyle(e).opacity)`);
   assert.ok(rest.length >= 7 && rest.every((o) => o === 0), `labels visible at rest: ${rest}`);
   const bad = [];
-  const objs = ['shelf', 'desk', 'painting', 'postcard', 'peg', 'resume', 'linkedin'];
+  const objs = ['painting', 'postcard', 'shelf', 'desk', 'peg', 'resume', 'linkedin'] // visual order: top row first;
   const animatedWhenAllowed = [];
   for (const reduce of [false, true]) {
     await tab.view(1440, 900, { reduce });

@@ -11,9 +11,7 @@ html.p-writing,html.p-writing body{background:var(--wood-dk)}
 .page-in{max-height:604px;overflow-y:auto;padding:0 10px 4px 0}
 .page.r .page-in{max-height:480px}
 .year{font:400 24px/1 var(--hand);color:var(--red-pencil);margin:0 0 14px}
-.year + .page-in{max-height:604px;overflow-y:auto;padding:0 10px 4px 0}
-.page.r .page-in{max-height:480px}
-.year{margin-top:24px}
+.toc + .year{margin-top:24px}
 .toc{list-style:none}
 .toc li{margin-bottom:22px}
 .toc a{display:inline-block;position:relative;font:400 29px/1.1 var(--hand);color:var(--blue-ink)}

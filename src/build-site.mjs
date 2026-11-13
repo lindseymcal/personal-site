@@ -1,8 +1,7 @@
 // Everything the build does except touching the disk or the network: inputs in, a map of
 // "file path -> page text" out. scripts/build.mjs reads the files and writes this result.
 import { csvToObjects, parseCsv } from './csv.mjs';
-import { isHexColor } from './books.mjs';
-import { rowsToBooks, mergeExtra, groupByYear, unmatchedExtraIds } from './books.mjs';
+import { rowsToBooks, mergeExtra, groupByYear, unmatchedExtraIds, applyReviewPolicy, isHexColor } from './books.mjs';
 import { normalizeConfig, normalizeProjects, groupEssaysByYear, splitYearsAcrossPages } from './site.mjs';
 import { renderHome, renderBooks, renderWriting, renderProjects, renderProject } from './render.mjs';
 
@@ -14,7 +13,7 @@ export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, 
   }
   const config = normalizeConfig(configRaw);
   const projects = normalizeProjects(projectsRaw);
-  const books = rowsToBooks(csvToObjects(csvText)).map((b) => mergeExtra(b, extras));
+  const books = rowsToBooks(csvToObjects(csvText)).map((b) => applyReviewPolicy(mergeExtra(b, extras), config.reviews, extras));
   const badColors = new Set();
   const colorFor = (b) => {
     const c = b.isbn ? colors[b.isbn] : undefined;

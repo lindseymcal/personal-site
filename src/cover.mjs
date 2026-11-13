@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { bmpDominantColor } from './bmp.mjs';
 import { tuneCoverColor } from './spine.mjs';
 
@@ -28,13 +28,30 @@ export function jpegToBmp(jpegBytes) {
   }
 }
 
+const MAX_COVER_BYTES = 1_000_000;
+const ALLOWED_HOST = /(^|\.)(openlibrary|archive)\.org$/i;
+
+// Is macOS `sips` installed? Checked once per build so a missing tool does not cause repeated downloads.
+export function sipsAvailable(run = spawnSync) {
+  const r = run('sips', ['--version'], { stdio: 'ignore' });
+  return !r.error;
+}
+
 // Returns { status: 'ok', hex } | { status: 'none' } (no cover exists) | { status: 'error', message } (try again later).
+// Safety checks before any file is handed to sips: the final address (after redirects) must be on
+// openlibrary.org or archive.org, the response must be an image, and it must be under about 1 MB.
 export async function fetchCoverColor(isbn, { fetchImpl = globalThis.fetch, toBmp = jpegToBmp } = {}) {
   try {
     const res = await fetchImpl(coverUrl(isbn), { signal: AbortSignal.timeout(15_000), redirect: 'follow' });
     if (res.status === 404) return { status: 'none' };
     if (!res.ok) return { status: 'error', message: `HTTP ${res.status}` };
+    if (res.url && !ALLOWED_HOST.test(new URL(res.url).hostname)) return { status: 'error', message: `unexpected host ${new URL(res.url).hostname}` };
+    const type = res.headers?.get?.('content-type');
+    if (type && !/^image\//i.test(type)) return { status: 'error', message: `not an image (${type})` };
+    const declared = Number(res.headers?.get?.('content-length'));
+    if (declared > MAX_COVER_BYTES) return { status: 'error', message: 'cover file is too large' };
     const bytes = Buffer.from(await res.arrayBuffer());
+    if (bytes.length > MAX_COVER_BYTES) return { status: 'error', message: 'cover file is too large' };
     if (bytes.length < 300) return { status: 'none' }; // a placeholder pixel, not a real cover
     const hex = tuneCoverColor(bmpDominantColor(toBmp(bytes)));
     return { status: 'ok', hex };

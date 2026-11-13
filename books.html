@@ -11,11 +11,21 @@
 <link rel="stylesheet" href="assets/site.css">
 <link rel="stylesheet" href="assets/books.css">
 <script>
-(function(){var d=document.documentElement;d.classList.add('fitted');
-var H=+d.getAttribute('data-stage-h')||800;
-function f(){var w=d.clientWidth,h=innerHeight,s=H>800?w/1280:Math.min(w/1280,h/H);
-d.style.setProperty('--s',Math.min(s,3));d.style.setProperty('--stage-h',H);d.style.setProperty('--ps',w/390)}
-f();addEventListener('resize',f);addEventListener('load',f)})();
+(function () {
+  var d = document.documentElement;
+  d.classList.add('fitted');
+  var stageH = +d.getAttribute('data-stage-h') || 800;
+  function fit() {
+    var w = d.clientWidth, h = innerHeight;
+    var s = stageH > 800 ? w / 1280 : Math.min(w / 1280, h / stageH);
+    d.style.setProperty('--s', Math.min(s, 3));
+    d.style.setProperty('--stage-h', stageH);
+    d.style.setProperty('--ps', w / 390);
+  }
+  fit();
+  addEventListener('resize', fit);
+  addEventListener('load', fit);
+})();
 </script>
 </head>
 <body>
@@ -63,7 +73,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </main>
 
   <section class="pull" id="b-9000002" aria-label="Middlemarch, George Eliot">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000002" aria-label="Put the book back"></a>
     <div class="book" style="background:#554646;color:#FBF3E2;font-family:'IM Fell English SC'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px;font-size:34px">Middlemarch</b><span>George Eliot</span></div>
     
     <article class="letter" tabindex="0">
@@ -76,7 +86,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000001" aria-label="Persuasion, Jane Austen">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000001" aria-label="Put the book back"></a>
     <div class="book" style="background:#7b706e;color:#FFFFFF;font-family:'Playfair Display SC'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px;font-size:34px">Persuasion</b><span>Jane Austen</span></div>
     <div class="slip"><i>recommended by Ada</i></div>
     <article class="letter" tabindex="0">
@@ -90,7 +100,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000003" aria-label="Walden, Henry David Thoreau">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000003" aria-label="Put the book back"></a>
     <div class="book" style="background:#c3a179;color:#1B1713;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:34px">Walden</b><span>Henry David Thoreau</span></div>
     
     <article class="card">
@@ -101,7 +111,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000004" aria-label="My Ántonia, Willa Cather">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000004" aria-label="Put the book back"></a>
     <div class="book" style="background:#68580a;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px;font-size:34px;text-transform:uppercase">My Ántonia</b><span>Willa Cather</span></div>
     
     <article class="card">
@@ -112,7 +122,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000006" aria-label="North and South, Elizabeth Gaskell">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000006" aria-label="Put the book back"></a>
     <div class="book" style="background:#93795f;color:#000000;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:28px">North and South</b><span>Elizabeth Gaskell</span></div>
     
     <article class="letter" tabindex="0">
@@ -124,7 +134,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000007" aria-label="Frankenstein, Mary Shelley">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000007" aria-label="Put the book back"></a>
     <div class="book" style="background:#9f7155;color:#000000;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:34px">Frankenstein</b><span>Mary Shelley</span></div>
     
     <article class="card">
@@ -135,7 +145,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000008" aria-label="Jane Eyre, Charlotte Brontë">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000008" aria-label="Put the book back"></a>
     <div class="book" style="background:#755542;color:#FBF3E2;font-family:'Playfair Display SC'"><i class="frame"></i><b style="font-size:34px">Jane Eyre</b><span>Charlotte Brontë</span></div>
     
     <article class="letter" tabindex="0">
@@ -147,7 +157,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000009" aria-label="The Age of Innocence, Edith Wharton">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000009" aria-label="Put the book back"></a>
     <div class="book" style="background:#6a5258;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:28px;text-transform:uppercase">The Age of Innocence</b><span>Edith Wharton</span></div>
     
     <article class="card">
@@ -158,7 +168,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000010" aria-label="Silas Marner, George Eliot">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000010" aria-label="Put the book back"></a>
     <div class="book" style="background:#6e2e35;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:34px">Silas Marner</b><span>George Eliot</span></div>
     
     <article class="card">
@@ -169,7 +179,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000011" aria-label="Emma, Jane Austen">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000011" aria-label="Put the book back"></a>
     <div class="book" style="background:#6a4334;color:#FBF3E2;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:34px">Emma</b><span>Jane Austen</span></div>
     
     <article class="card">
@@ -180,7 +190,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000005" aria-label="Moby-Dick; or, The Whale, Herman Melville">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000005" aria-label="Put the book back"></a>
     <div class="book" style="background:#67653e;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px;font-size:23px">Moby-Dick</b><span>Herman Melville</span></div>
     <div class="slip"><i>recommended by Theo</i></div>
     <article class="card">
@@ -191,7 +201,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000012" aria-label="Bleak House, Charles Dickens">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000012" aria-label="Put the book back"></a>
     <div class="book" style="background:#606654;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:34px">Bleak House</b><span>Charles Dickens</span></div>
     
     <article class="card">
@@ -202,7 +212,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000013" aria-label="The Awakening, Kate Chopin">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000013" aria-label="Put the book back"></a>
     <div class="book" style="background:#6b7e6b;color:#000000;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:28px">The Awakening</b><span>Kate Chopin</span></div>
     
     <article class="card">
@@ -213,7 +223,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000014" aria-label="Cranford, Elizabeth Gaskell">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000014" aria-label="Put the book back"></a>
     <div class="book" style="background:#3e3a2e;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:34px">Cranford</b><span>Elizabeth Gaskell</span></div>
     
     <article class="card">
@@ -224,7 +234,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000015" aria-label="Mrs Dalloway, Virginia Woolf">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000015" aria-label="Put the book back"></a>
     <div class="book" style="background:#766e65;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:34px;text-transform:uppercase">Mrs Dalloway</b><span>Virginia Woolf</span></div>
     
     <article class="card">
@@ -235,7 +245,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000016" aria-label="The Souls of Black Folk, W. E. B. Du Bois">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000016" aria-label="Put the book back"></a>
     <div class="book" style="background:#534c3b;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:23px;text-transform:uppercase">The Souls of Black Folk</b><span>W. E. B. Du Bois</span></div>
     
     <article class="letter" tabindex="0">
@@ -247,7 +257,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000017" aria-label="Little Women, Louisa May Alcott">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000017" aria-label="Put the book back"></a>
     <div class="book" style="background:#4d4f3f;color:#FBF3E2;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:34px">Little Women</b><span>Louisa May Alcott</span></div>
     
     <article class="card">
@@ -258,7 +268,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000018" aria-label="Wuthering Heights, Emily Brontë">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000018" aria-label="Put the book back"></a>
     <div class="book" style="background:#3f4645;color:#FBF3E2;font-family:'Playfair Display SC'"><i class="frame"></i><b style="font-size:28px">Wuthering Heights</b><span>Emily Brontë</span></div>
     
     <article class="card">
@@ -269,7 +279,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000019" aria-label="Great Expectations, Charles Dickens">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000019" aria-label="Put the book back"></a>
     <div class="book" style="background:#3a536c;color:#FBF3E2;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:28px">Great Expectations</b><span>Charles Dickens</span></div>
     
     <article class="card">
@@ -280,7 +290,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000020" aria-label="The Moonstone, Wilkie Collins">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000020" aria-label="Put the book back"></a>
     <div class="book" style="background:#a8452f;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:28px">The Moonstone</b><span>Wilkie Collins</span></div>
     
     <article class="card">
@@ -291,7 +301,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000021" aria-label="Anna Karenina, Leo Tolstoy">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000021" aria-label="Put the book back"></a>
     <div class="book" style="background:#2b2d4a;color:#FBF3E2;font-family:'Libre Baskerville'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px;font-size:28px">Anna Karenina</b><span>Leo Tolstoy</span></div>
     
     <article class="letter" tabindex="0">
@@ -303,7 +313,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000022" aria-label="The House of Mirth, Edith Wharton">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000022" aria-label="Put the book back"></a>
     <div class="book" style="background:#6d584e;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:28px;text-transform:uppercase">The House of Mirth</b><span>Edith Wharton</span></div>
     
     <article class="card">
@@ -314,7 +324,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000023" aria-label="Villette, Charlotte Brontë">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000023" aria-label="Put the book back"></a>
     <div class="book" style="background:#887967;color:#000000;font-family:'Libre Baskerville'"><i class="frame"></i><b style="font-size:34px">Villette</b><span>Charlotte Brontë</span></div>
     
     <article class="card">
@@ -325,7 +335,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000024" aria-label="Dracula, Bram Stoker">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000024" aria-label="Put the book back"></a>
     <div class="book" style="background:#891e1a;color:#FBF3E2;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:34px">Dracula</b><span>Bram Stoker</span></div>
     
     <article class="card">
@@ -336,7 +346,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000025" aria-label="Howards End, E. M. Forster">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000025" aria-label="Put the book back"></a>
     <div class="book" style="background:#856a5f;color:#FBF3E2;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:34px;text-transform:uppercase">Howards End</b><span>E. M. Forster</span></div>
     
     <article class="card">
@@ -347,7 +357,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000026" aria-label="Sense and Sensibility, Jane Austen">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000026" aria-label="Put the book back"></a>
     <div class="book" style="background:#998d81;color:#1B1713;font-family:'IM Fell English SC'"><i class="frame"></i><b style="font-size:23px">Sense and Sensibility</b><span>Jane Austen</span></div>
     
     <article class="card">
@@ -358,7 +368,7 @@ f();addEventListener('resize',f);addEventListener('load',f)})();
   </section>
 
   <section class="pull" id="b-9000027" aria-label="The Odyssey, Homer">
-    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <a class="scrim" href="#s-9000027" aria-label="Put the book back"></a>
     <div class="book" style="background:#bc8257;color:#1B1713;font-family:'Josefin Sans'"><i class="frame"></i><b style="font-size:34px;text-transform:uppercase">The Odyssey</b><span>Homer</span></div>
     
     <article class="card">

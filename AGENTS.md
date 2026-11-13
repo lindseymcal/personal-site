@@ -13,10 +13,11 @@ It's also a learning project: explain what you're doing and why, and prefer code
 - Small, reviewable changes; one concern per change.
 
 ## How it works
+- **The build needs an explicit CSV path.** Agents run `npm run build:sample` and never `npm run build` (that reads Zee's real export). Reviews flagged as spoilers are never published; `reviews` in `site.config.json` limits which others are.
 - `scripts/build.mjs` reads the Goodreads CSV plus `site.config.json`, `content/*.json` and `writing/*.html`, and writes `index.html`, `books.html`, `writing.html`, `projects.html` and `projects/*.html`. The generated pages are committed so the site can be served as-is (no build needed to serve).
 - `src/render.mjs` holds the page templates, `src/build-site.mjs` ties the pure pieces together, and `assets/*.css` holds the styles (one file per page, plus `site.css`).
-- Open Library cover colors are looked up at build time only (`src/cover.mjs`) and cached in `content/spine-colors.json`.
-- Essays are hand-written files in `writing/` with `essay-*` meta tags (copy `writing/_template.html`); the build only reads them to make the notebook index.
+- Open Library cover colors are looked up at build time only (`src/cover.mjs`) and cached outside the repo in `~/.agent-fleet/goodreads/spine-colors.json` (the sample build uses `tests/fixtures/sample-spine-colors.json`).
+- Essays are hand-written files in `writing/` with `essay-*` meta tags (copy `docs/essay-template.html`); the build only reads them to make the notebook index.
 
 ## Design
 The source of truth is `docs/design/` (copies of the designer's mockups; start at `index.html`). Decisions that must hold:

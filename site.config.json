@@ -4,5 +4,6 @@
   "artInstagramUrl": "https://www.instagram.com/your-handle",
   "linkedinUrl": "https://www.linkedin.com/in/your-name",
   "substackUrl": "https://your-name.substack.com",
-  "resumePath": "resume.pdf"
+  "resumePath": "resume.pdf",
+  "reviews": "all"
 }

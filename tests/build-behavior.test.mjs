@@ -76,14 +76,13 @@ test('--offline: two builds are byte-identical, and fetch is never called', () =
 
 test('control: without --offline the trap DOES see fetches for ISBNs not in the cache (so the offline test above is meaningful)', () => {
   const dir = makeCopy();
-  fs.writeFileSync(path.join(dir, 'content/spine-colors.json'), '{}\n');
   const trap = writeFetchTrap(dir);
   const r = runBuild(dir, FIXTURE, [], { trap });
   assert.equal(r.status, 0, r.stderr);
   const log = fs.readFileSync(path.join(dir, 'fetch.log'), 'utf8');
   assert.match(log, /^https:\/\/covers\.openlibrary\.org\/b\/isbn\//m);
   // network errors are not cached: the cache file stays empty so the next build retries
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'content/spine-colors.json'), 'utf8')), {});
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.agent-fleet/goodreads/spine-colors.json'), 'utf8')), {});
   assert.match(r.stdout, /failed \(will retry next build\)/);
 }, { timeout: 120_000 });
 
