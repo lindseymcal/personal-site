@@ -259,7 +259,7 @@ test('--out may only be preview/ (or inside it); anything else is refused and no
     const home = tempDir();
     const r = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), FIXTURE, '--offline', '--cache', `${dir}-c.json`, '--out', out], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: home } });
     assert.equal(r.status, 1, `--out ${out}`);
-    assert.match(r.stderr, /--out may only be the preview folder/, out);
+    assert.match(r.stderr, /--out may only be the site folder or the preview folder/, out);
     assert.equal(fs.readFileSync(path.join(dir, 'index.html'), 'utf8'), 'REAL', out);
     assert.ok(!fs.existsSync(path.join(dir, 'books.html')), out);
     assert.ok(!fs.existsSync(`${dir}-c.json`), out);
@@ -321,7 +321,7 @@ test('a CSV inside the repo is refused (only tests/fixtures may hold one); keep 
 });
 
 test('.gitignore keeps exports and spreadsheets out of git, anywhere in the repo', () => {
-  const ignored = ['export.csv', 'content/goodreads_library_export.numbers', 'content/books.numbers', 'a/b/c.xlsx', 'x.xls', 'x.ods', 'x.tsv', 'content/goodreads-export', 'deep/er/Goodreads_x.txt'.replace('Goodreads', 'goodreads'), 'resume.pdf', 'preview/index.html'];
+  const ignored = ['export.csv', 'content/goodreads_library_export.numbers', 'content/books.numbers', 'a/b/c.xlsx', 'x.xls', 'x.ods', 'x.tsv', 'goodreads_anything.txt', 'content/goodreads_library_export (1).csv', 'deep/er/goodreads_library_export.txt', 'site/index.html', 'resume.pdf', 'preview/index.html'];
   for (const f of ignored) {
     const r = spawnSync('git', ['check-ignore', '-q', f], { cwd: REPO });
     assert.equal(r.status, 0, `${f} should be git-ignored`);

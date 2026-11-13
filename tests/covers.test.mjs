@@ -189,7 +189,7 @@ test('--covers refuses to run without --out preview, and writes nothing', () => 
   // and --out somewhere else is still refused when covers are asked for
   const bad = runBuild(dir, [FIXTURE, '--covers', '--out', dir, '--cache', `${dir}-c.json`]);
   assert.equal(bad.status, 1);
-  assert.match(bad.stderr, /--out may only be the preview folder/);
+  assert.match(bad.stderr, /--covers only works together with --out preview/);
 });
 
 test('--covers --out preview: downloads into the private cache outside the repo, copies pictures only into preview/', { skip: !sipsAvailable() }, () => {

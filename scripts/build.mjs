@@ -1,19 +1,25 @@
 #!/usr/bin/env node
 // Builds the site's pages from your files. Run it from the repo root. A CSV path is REQUIRED
-// (so a build can never pick up your real Goodreads export by accident):
+// (so a build can never pick up your real Goodreads export by accident).
 //
-//   npm run build           YOUR real export (~/.agent-fleet/goodreads/goodreads_library_export.csv).
-//                           Rewrites the real pages. Run this after ANY change you want on the site
-//                           (books, links, essays, projects).
-//   npm run build:sample    a PREVIEW of the whole site from the fake sample books, written to the
-//                           git-ignored preview/ folder. Touches nothing else. For code and design work.
-//   node scripts/build.mjs <file.csv> [--cache <file>] [--cache-seed <file>] [--out <folder>]
+//   npm run build            YOUR real export (~/.agent-fleet/goodreads/goodreads_library_export.csv).
+//                            Writes the COMPLETE site (pages, assets, fonts, pictures, résumé) into the
+//                            git-ignored site/ folder: preview it at site/index.html. Run it after ANY change
+//                            you want on the site (books, links, essays, projects). It never writes the repo root.
+//   npm run build:sample     a PREVIEW of the whole site from the fake sample books, into the git-ignored preview/.
+//   npm run refresh:sample   the ONLY thing that writes the repo root: refreshes the committed sample pages
+//                            (index.html, books.html, ...) from the fake sample CSV. Refused for any other CSV.
+//   node scripts/build.mjs <file.csv> [--cache <file>] [--cache-seed <file>] [--out <folder>] [--root]
 //                          [--offline] [--refresh-colors] [--allow-empty] [--prune] [--covers]
 //   npm run preview:covers   EXPERIMENT: your real books with real cover pictures, into preview/ only (see --covers)
 //
-// Reads:  the CSV, site.config.json, content/books-extra.json, content/projects.json, the Substack feed (content/substack-feed.json when offline)
-// Writes: index.html, books.html, writing.html, projects.html, projects/<name>.html and the Substack
-//         (all into --out, default the repo itself), plus the cover-color cache and content/substack-feed.json.
+// Where output may go: --out must be site/ or preview/ (or a folder inside); with no --out it is site/.
+// The repo root is only written with --root, and only when the CSV is the fake sample in tests/fixtures/.
+//
+// Reads:  the CSV, site.config.json, content/books-extra.json, content/projects.json, the Substack feed
+//         (content/substack-feed.json is the saved copy for offline builds)
+// Writes: index.html, books.html, writing.html, projects.html, projects/<name>.html (and, outside the root, a copy of
+//         assets/) into the output folder, plus the cover-color cache and (not for previews) content/substack-feed.json.
 //
 // Cover-color cache (ISBN -> spine color), kept OUT of the repo:
 //   - for your real export it is ~/.agent-fleet/goodreads/spine-colors.json
@@ -27,7 +33,8 @@
 // never into the real site, because republishing cover images is Zee's decision.
 // Safety stops (nothing is written): the CSV lacks the Goodreads columns or holds 0 read books
 // (wrong file?) unless --allow-empty.
-// The only network use: Open Library cover colors for ISBNs not already cached. --offline skips that.
+// The only network use: Open Library cover colors for ISBNs not already cached (--offline skips that) and the
+// one Substack feed request (--offline skips that too).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -114,7 +121,10 @@ async function main() {
   if (!csvArg) {
     throw new Error('Tell me which CSV to build from (this is on purpose, so your real export is never read by accident):\n  npm run build          your real Goodreads export: rewrites the real pages\n  npm run build:sample   a preview from the fake sample books, written to preview/');
   }
-  if (flags.has('--covers') && !values['--out']) {
+  const within = (child, parent) => { const r = path.relative(parent, child); return r === '' || (!r.startsWith('..') && !path.isAbsolute(r)); };
+  const previewDir = path.join(ROOT, 'preview');
+  const siteDir = path.join(ROOT, 'site');
+  if (flags.has('--covers') && !(values['--out'] && within(realish(values['--out']), previewDir))) {
     throw new Error('--covers only works together with --out preview (cover pictures are never put in the real site). Try: npm run preview:covers. Nothing was changed.');
   }
   const csvPath = realish(csvArg);
@@ -133,14 +143,21 @@ async function main() {
     throw new Error('This CSV is not your real export, so I will not use your real color cache. Add --cache <file> (npm run build:sample does this for you).');
   }
   const cachePath = realish(values['--cache'] ?? DEFAULT_CACHE);
-  const outDir = realish(values['--out'] ?? ROOT);
-  // Where files may go. --out may only point at preview/ (or inside it) so a typo can never overwrite
-  // other folders; a cache may not live inside the repo (except in preview/), so ISBNs are never committed.
-  const within = (child, parent) => { const r = path.relative(parent, child); return r === '' || (!r.startsWith('..') && !path.isAbsolute(r)); };
-  const previewDir = path.join(ROOT, 'preview');
-  if (values['--out'] && !within(outDir, previewDir)) {
-    throw new Error(`--out may only be the preview folder (or a folder inside it): ${previewDir}\nNothing was changed.`);
+  // Where files may go. A typo can never overwrite other folders: --out must be site/ or preview/ (or inside one),
+  // and the repo root is written only by the sample refresh (--root with the fake sample CSV).
+  // A cache may not live inside the repo (except in preview/), so ISBNs are never committed.
+  let outDir;
+  if (flags.has('--root')) {
+    if (!insideFixtures) throw new Error('The repo root is only written by the sample refresh (npm run refresh:sample, with the fake sample CSV), never from a real export. Use npm run build: it writes site/. Nothing was changed.');
+    if (values['--out']) throw new Error('--root and --out cannot be used together. Nothing was changed.');
+    outDir = ROOT;
+  } else {
+    outDir = realish(values['--out'] ?? siteDir);
+    if (!within(outDir, siteDir) && !within(outDir, previewDir)) {
+      throw new Error(`--out may only be the site folder or the preview folder (or a folder inside one): ${siteDir} or ${previewDir}\nNothing was changed.`);
+    }
   }
+  const isPreview = within(outDir, previewDir);
   if (within(cachePath, ROOT) && !within(cachePath, previewDir) && cachePath !== realish(DEFAULT_CACHE)) {
     throw new Error(`The color cache must not be inside the repo (except in preview/), so your ISBNs are never committed: ${cachePath}\nNothing was changed.`);
   }
@@ -204,7 +221,7 @@ async function main() {
 
   // ---- from here on we write (everything above only reads) ----
   const config = normalizeConfig(readJson('site.config.json', {}));
-  const { essays, problems, source } = await loadEssays({ feedUrl: config.substackFeedUrl, offline: flags.has('--offline'), writeCache: outDir === ROOT });
+  const { essays, problems, source } = await loadEssays({ feedUrl: config.substackFeedUrl, offline: flags.has('--offline'), writeCache: !isPreview });
   const { pages, warnings } = buildPages({
     csvText,
     extras,
@@ -228,6 +245,8 @@ async function main() {
   fs.writeFileSync(cachePath, JSON.stringify(pruned, null, 2) + '\n', { mode: 0o600 });
   fs.chmodSync(cachePath, 0o600); // the mode above only applies to a NEW file, so set it on every write
 
+  // site/ is rebuilt from scratch so nothing stale is ever deployed; a deployable site needs its assets too
+  if (outDir === siteDir) fs.rmSync(siteDir, { recursive: true, force: true });
   if (outDir !== ROOT) fs.cpSync(path.join(ROOT, 'assets'), path.join(outDir, 'assets'), { recursive: true });
   fs.mkdirSync(path.join(outDir, 'projects'), { recursive: true });
   // Remove old generated project pages whose project is gone.
@@ -235,7 +254,9 @@ async function main() {
     if (f.endsWith('.html') && !(`projects/${f}` in pages)) fs.rmSync(path.join(outDir, 'projects', f));
   }
   for (const [rel, html] of Object.entries(pages)) fs.writeFileSync(path.join(outDir, rel), html);
-  if (outDir !== ROOT) console.log(`Preview written to ${path.relative(ROOT, outDir) || outDir}/ (open its index.html). No real pages were touched.`);
+  if (isPreview) console.log(`Preview written to ${path.relative(ROOT, outDir)}/ (open its index.html). Nothing else was touched.`);
+  else if (outDir === ROOT) console.log('Sample pages refreshed in the repo root (these are committed; they come from the fake sample books).');
+  else console.log(`Site written to ${path.relative(ROOT, outDir)}/ (open ${path.relative(ROOT, outDir)}/index.html). The repo root was not touched.`);
 
   console.log(`Wrote ${Object.keys(pages).length} pages: ${Object.keys(pages).join(', ')}`);
   console.log(`Writing: ${essays.length} essays from the ${source}.`);

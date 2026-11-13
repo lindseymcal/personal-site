@@ -8,12 +8,7 @@
     "when": "[Add dates]",
     "builtWith": "Node, Slack, agent hooks",
     "status": "[Add status]",
-    "links": [
-      {
-        "label": "Source code",
-        "url": "https://example.com/agent-fleet"
-      }
-    ],
+    "links": [],
     "problem": "[Placeholder] Describe the problem this project set out to solve, in two or three sentences.",
     "built": [
       "[Placeholder] One thing you made",

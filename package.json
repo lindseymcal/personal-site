@@ -9,6 +9,8 @@
     "build": "node scripts/build.mjs \"$HOME/.agent-fleet/goodreads/goodreads_library_export.csv\"",
     "build:sample": "node scripts/build.mjs tests/fixtures/sample-goodreads.csv --cache preview/spine-colors.json --cache-seed tests/fixtures/sample-spine-colors.json --out preview",
     "serve": "python3 -m http.server 8080 --bind 127.0.0.1",
-    "preview:covers": "node scripts/build.mjs \"$HOME/.agent-fleet/goodreads/goodreads_library_export.csv\" --out preview --cache \"$HOME/.agent-fleet/goodreads/spine-colors.json\" --covers"
+    "preview:covers": "node scripts/build.mjs \"$HOME/.agent-fleet/goodreads/goodreads_library_export.csv\" --out preview --cache \"$HOME/.agent-fleet/goodreads/spine-colors.json\" --covers",
+    "refresh:sample": "node scripts/build.mjs tests/fixtures/sample-goodreads.csv --cache preview/sample-cache.json --cache-seed tests/fixtures/sample-spine-colors.json --offline --root",
+    "serve:site": "python3 -m http.server 8080 --bind 127.0.0.1 --directory site"
   }
 }

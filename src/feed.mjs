@@ -1,7 +1,7 @@
 // Essays come from Zee's Substack RSS feed. We read only the plain facts (title, date, a short summary and the
 // address of the post) and link out to Substack; we never import a post's HTML (that would need a sanitizer).
 // The network part is fetchFeed (one request, timeout, size cap, host allowlist); everything else is pure.
-import { decodeBasicEntities, reviewToParagraphs } from './books.mjs';
+import { decodeBasicEntities } from './books.mjs';
 import { safeUrl } from './site.mjs';
 
 export const FEED_MAX_BYTES = 1_000_000;
@@ -17,17 +17,26 @@ function urlHostAllowed(url, extraHosts) {
   try { return hostAllowed(new URL(url).hostname, extraHosts); } catch { return false; }
 }
 
-// Plain text from a feed field: CDATA unwrapped, entities decoded, tags removed. Never HTML.
+export const FIELD_MAX_CHARS = 20_000; // every raw field is cut to this size BEFORE any tag-stripping
+
+// Plain text from a feed field. Entities are decoded exactly ONCE, after the tags are gone:
+//  - a CDATA field holds HTML as written: remove tags, then decode entities (&amp; -> &)
+//  - an ordinary XML field holds escaped HTML: unescape it once (&lt;b&gt; -> <b>), then remove tags
+// Script and style blocks are dropped with their contents. The result is never HTML.
 export function plainText(raw) {
-  const unwrapped = String(raw ?? '').replace(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/, '$1');
-  const isCdata = unwrapped !== String(raw ?? '');
-  const text = isCdata ? unwrapped : decodeBasicEntities(unwrapped);
-  return reviewToParagraphs(text).join(' ').replace(/\s+/g, ' ').trim();
+  const field = String(raw ?? '').slice(0, FIELD_MAX_CHARS);
+  const cdata = field.match(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/);
+  const stripTags = (html) => html
+    .replace(/<(script|style)\b[\s\S]*?<\/\1\s*>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/?[a-zA-Z][^>]*>/g, '');
+  const text = cdata ? decodeBasicEntities(stripTags(cdata[1])) : stripTags(decodeBasicEntities(field));
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function tag(item, name) {
   const m = item.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`));
-  return m ? m[1] : '';
+  return m ? m[1].slice(0, FIELD_MAX_CHARS) : '';
 }
 
 // One entry, checked: { title, url, date: 'YYYY-MM-DD', summary }. Returns null when anything essential is wrong.
@@ -56,10 +65,12 @@ export function parseFeed(xml, extraHosts = []) {
   for (const item of items.slice(0, FEED_MAX_ITEMS)) {
     const when = new Date(plainText(tag(item, 'pubDate')));
     if (Number.isNaN(when.getTime())) continue;
+    const pad = (n) => String(n).padStart(2, '0');
+    const localDate = `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`; // local time, not UTC
     const entry = normalizeEntry({
       title: tag(item, 'title'),
       url: plainText(tag(item, 'link')),
-      date: when.toISOString().slice(0, 10),
+      date: localDate,
       summary: tag(item, 'description'),
     }, extraHosts);
     if (entry) entries.push(entry);
@@ -79,10 +90,11 @@ export function feedCacheObject(feedUrl, entries) {
 export async function fetchFeed(feedUrl, { fetchImpl = globalThis.fetch, extraHosts = [] } = {}) {
   try {
     const hosts = extraHosts; // substack.com is always allowed; a custom domain must be passed in explicitly
-    if (!urlHostAllowed(feedUrl, hosts) || new URL(feedUrl).protocol !== 'https:') return { status: 'error', message: 'the feed address must be https on substack.com (or the publication\'s own domain)' };
+    if (!urlHostAllowed(feedUrl, hosts) || new URL(feedUrl).protocol !== 'https:') return { status: 'error', message: 'the feed address must be an https address on substack.com, or on a custom domain you named in the settings' };
     const res = await fetchImpl(feedUrl, { signal: AbortSignal.timeout(15_000), redirect: 'follow', headers: { accept: 'application/rss+xml, application/xml, text/xml' } });
     if (!res.ok) return { status: 'error', message: `HTTP ${res.status}` };
     if (res.url && !urlHostAllowed(res.url, hosts)) return { status: 'error', message: `unexpected host ${new URL(res.url).hostname}` };
+    if (res.url && new URL(res.url).protocol !== 'https:') return { status: 'error', message: 'the feed moved to a non-https address' };
     const type = res.headers?.get?.('content-type');
     if (type && !/xml|rss/i.test(type)) return { status: 'error', message: `not a feed (${type})` };
     if (Number(res.headers?.get?.('content-length')) > FEED_MAX_BYTES) return { status: 'error', message: 'the feed is too large' };

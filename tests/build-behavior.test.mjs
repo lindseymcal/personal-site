@@ -88,15 +88,17 @@ test('control: without --offline the trap DOES see fetches for ISBNs not in the 
   assert.match(r.stdout, /failed \(will retry next build\)/);
 }, { timeout: 120_000 });
 
-test('the build only writes the expected files and deletes stale project pages', () => {
+test('the build writes a clean complete site/ (stale pages gone), and leaves the repo root alone', () => {
   const dir = makeCopy();
-  fs.writeFileSync(path.join(dir, 'projects/stale-old-project.html'), 'old');
-  fs.writeFileSync(path.join(dir, 'projects/notes.txt'), 'keep me');
+  fs.mkdirSync(path.join(dir, 'site/projects'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'site/projects/stale-old-project.html'), 'old');
+  fs.writeFileSync(path.join(dir, 'projects/notes.txt'), 'keep me'); // in the repo root: not ours to touch
   const r = runBuild(dir, FIXTURE, ['--offline']);
   assert.equal(r.status, 0, r.stderr);
-  assert.ok(!fs.existsSync(path.join(dir, 'projects/stale-old-project.html')));
-  assert.ok(fs.existsSync(path.join(dir, 'projects/notes.txt')), 'non-html files in projects/ must be left alone');
-  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html']) assert.ok(fs.existsSync(path.join(dir, f)), f);
+  assert.ok(!fs.existsSync(path.join(dir, 'site/projects/stale-old-project.html')));
+  assert.ok(fs.existsSync(path.join(dir, 'projects/notes.txt')));
+  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html', 'assets/site.css', 'assets/fonts.css']) assert.ok(fs.existsSync(path.join(dir, 'site', f)), `site/${f}`);
+  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html']) assert.ok(!fs.existsSync(path.join(dir, f)), `root ${f} must not be written`);
 });
 
 test('invalid JSON in a content file stops the build with a message naming the file', () => {
@@ -122,10 +124,10 @@ test('an empty CSV (header only) and a totally empty file build every page witho
     const r = runBuild(dir, csv, ['--offline', '--allow-empty']);
     assert.equal(r.status, 0, `${JSON.stringify(content)}: ${r.stderr}`);
     assert.match(r.stdout, /Read 0 books/);
-    const books = fs.readFileSync(path.join(dir, 'books.html'), 'utf8');
+    const books = fs.readFileSync(path.join(dir, 'site/books.html'), 'utf8');
     assert.ok(books.includes('class="bookend"'));
     assert.ok(!books.includes('undefined') && !books.includes('NaN'));
-    const home = fs.readFileSync(path.join(dir, 'index.html'), 'utf8');
+    const home = fs.readFileSync(path.join(dir, 'site/index.html'), 'utf8');
     assert.ok(!home.includes('undefined') && !home.includes('NaN'));
   }
 });

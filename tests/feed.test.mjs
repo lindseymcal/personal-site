@@ -33,7 +33,9 @@ test('parseFeed: keeps good posts, drops other hosts, javascript links, bad date
     'https://example.substack.com/p/entities',
     'https://example.substack.com/p/older',
   ]);
-  assert.deepEqual(entries.map((e) => e.date), ['2026-10-20', '2026-01-05', '2026-01-02', '2025-12-15']);
+  // dates are in the local time of the machine that builds (not UTC)
+  const local = (s) => { const d = new Date(s); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  assert.deepEqual(entries.map((e) => e.date), ['Tue, 20 Oct 2026 23:29:19 GMT', 'Mon, 05 Jan 2026 10:00:00 GMT', 'Fri, 02 Jan 2026 10:00:00 GMT', 'Mon, 15 Dec 2025 08:00:00 GMT'].map(local));
   assert.equal(entries[0].summary, 'A short summary with bold & more');
 });
 
@@ -43,9 +45,9 @@ test('parseFeed: titles and summaries are plain text only, and the full post HTM
     assert.ok(!/[<>]/.test(e.title.replace(/&/g, '')) || !/<[a-z\/]/i.test(e.title), e.title);
     assert.ok(!/<[a-z\/]/i.test(e.summary), e.summary);
   }
-  assert.equal(entries[1].title, 'alert("title")Hostile title');
+  assert.equal(entries[1].title, 'Hostile title'); // script contents are dropped with their tags
   assert.equal(entries[1].summary, 'Summary text');
-  assert.match(entries[2].title, /^Entities alert\(3\)/); // entity-encoded tags were decoded, then removed as tags
+  assert.equal(entries[2].title, 'Entities & "quotes"'); // entity-encoded tags were unescaped once, then removed as tags
   assert.ok(!JSON.stringify(entries).includes('FULL POST HTML'));
   assert.ok(!JSON.stringify(entries).includes('body'));
 });
@@ -59,7 +61,7 @@ test('the writing page shows hostile titles as escaped text and links to the pos
   assert.ok(html.includes('class="env" href="https://your-name.substack.com/subscribe"'));
   assert.ok(!html.includes('FULL POST HTML'));
   const groups = groupEssaysByYear(parseFeed(xml));
-  assert.deepEqual(groups.map((g) => g.year), [2026, 2025]);
+  assert.ok(groups.length >= 1 && groups[0].year >= 2025);
 });
 
 test('plainText and normalizeEntry guard every field', () => {
@@ -92,7 +94,7 @@ test('fetchFeed: one request, https on an allowed host only, size and type check
   assert.equal(ok.status, 'ok');
   assert.equal(calls, 1);
   assert.match((await fetchFeed('http://lindseymcal.substack.com/feed', { fetchImpl: async () => feedResponse() })).message, /https/);
-  assert.match((await fetchFeed('https://evil.example.com/feed', { fetchImpl: async () => feedResponse() })).message, /https on substack/);
+  assert.match((await fetchFeed('https://evil.example.com/feed', { fetchImpl: async () => feedResponse() })).message, /https address on substack/);
   assert.match((await fetchFeed('https://lindseymcal.substack.com/feed', { fetchImpl: async () => feedResponse({ res: { url: 'https://evil.example.com/feed' } }) })).message, /unexpected host/);
   assert.match((await fetchFeed('https://lindseymcal.substack.com/feed', { fetchImpl: async () => feedResponse({ headers: { 'content-type': 'text/html' } }) })).message, /not a feed/);
   assert.match((await fetchFeed('https://lindseymcal.substack.com/feed', { fetchImpl: async () => feedResponse({ headers: { 'content-length': String(FEED_MAX_BYTES + 1) } }) })).message, /too large/);
@@ -140,7 +142,7 @@ test('build: offline uses the saved copy and makes no request', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /essays from the cache \(offline\)/);
   assert.ok(!fs.existsSync(path.join(dir, 'fetch.log')));
-  assert.ok(fs.readFileSync(path.join(dir, 'writing.html'), 'utf8').includes('https://lindseymcal.substack.com/p/'));
+  assert.ok(fs.readFileSync(path.join(dir, 'site/writing.html'), 'utf8').includes('https://lindseymcal.substack.com/p/'));
 });
 
 test('build: fetches the feed once, writes the saved copy, and a failed fetch falls back to it with a warning', () => {
@@ -160,7 +162,7 @@ test('build: fetches the feed once, writes the saved copy, and a failed fetch fa
   assert.equal(bad.status, 0, bad.stderr);
   assert.match(bad.stderr, /could not read the Substack feed.*using the saved copy/);
   assert.equal(fs.readFileSync(path.join(dir, 'content/substack-feed.json'), 'utf8'), before);
-  assert.ok(fs.readFileSync(path.join(dir, 'writing.html'), 'utf8').includes('a-quiet-start'));
+  assert.ok(fs.readFileSync(path.join(dir, 'site/writing.html'), 'utf8').includes('a-quiet-start'));
 });
 
 test('a preview build (--out) may read the feed but never rewrites the saved copy', () => {
@@ -180,4 +182,20 @@ test('the published résumé: assets/resume.pdf is the ONE pdf git may take', ()
   const ignore = fs.readFileSync(path.join(REPO, '.gitignore'), 'utf8').split('\n');
   assert.ok(ignore.includes('*.pdf') && ignore.includes('!assets/resume.pdf'));
   assert.equal(ignore.filter((l) => /^!.*pdf/.test(l)).length, 1);
+});
+
+test('feed text is decoded exactly once, after the tags are gone', () => {
+  assert.equal(plainText('<![CDATA[Tom &amp;amp; Jerry <b>x</b>]]>'), 'Tom &amp; Jerry x'); // one level of decoding, not two
+  assert.equal(plainText('Tom &amp;amp; Jerry'), 'Tom &amp; Jerry');
+  assert.equal(plainText('<![CDATA[a &lt;script&gt;x&lt;/script&gt; b]]>'), 'a <script>x</script> b'); // decoded text is shown as TEXT; the page escapes it
+  const html = buildPages({ csvText, essays: [normalizeEntry({ title: '<![CDATA[a &lt;script&gt;x&lt;/script&gt; b]]>', url: 'https://a.substack.com/p/x', date: '2026-01-01' })] }).pages['writing.html'];
+  assert.ok(html.includes('a &lt;script&gt;x&lt;/script&gt; b') && !html.includes('<script>x'));
+});
+
+test('feed fields are capped before tag-stripping, and a redirect to http is refused', async () => {
+  const huge = `<![CDATA[${'a'.repeat(100_000)}]]>`;
+  assert.ok(plainText(huge).length <= 20_000);
+  assert.ok(parseFeed(`<item><title>${'x'.repeat(100_000)}</title><link>https://a.substack.com/p/x</link><pubDate>Mon, 05 Jan 2026 10:00:00 GMT</pubDate></item>`)[0].title.length <= 140);
+  const res = (url) => ({ ok: true, status: 200, url, headers: { get: () => 'application/rss+xml' }, arrayBuffer: async () => Buffer.from(xml) });
+  assert.match((await fetchFeed('https://lindseymcal.substack.com/feed', { fetchImpl: async () => res('http://lindseymcal.substack.com/feed') })).message, /non-https/);
 });

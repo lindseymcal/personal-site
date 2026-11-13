@@ -2,28 +2,29 @@
 
 A lamplit study. Each object in the room is the way into one part of the site. Plain HTML and CSS, no framework, nothing to install.
 
-- **Look at it:** `npm run serve`, then open http://127.0.0.1:8080 (or just open `index.html` in a browser).
+- **Your real site:** `npm run build` reads your Goodreads export and writes the complete site (pages, styles, fonts, pictures, résumé) into the git-ignored `site/` folder. Look at it with `npm run serve:site`, then open http://127.0.0.1:8080 (or open `site/index.html` directly). Run `npm run build` after ANY change you want on the site (books, links, essays, projects).
+- **The repo root** (`index.html`, `books.html`, ...) holds only the committed *sample* pages, built from fake books. Real builds never write there, and `npm run refresh:sample` (the sample refresh, for developers and agents) is the only thing that does.
+- `npm run build:sample` builds a preview of the sample site into the git-ignored `preview/` folder.
 - **Tests:** `npm test`
-- **Rebuild after ANY change** (books, links, essays, projects): `npm run build`. It reads your real Goodreads export and rewrites the real pages.
-- `npm run build:sample` is for developers and agents: it builds a preview of the whole site from fake sample books into the git-ignored `preview/` folder and touches nothing else.
 - The build always needs a CSV path and refuses to run without one. It also stops, changing nothing, if the CSV doesn't look like a Goodreads export or has no read books (`npm run build -- --allow-empty` to override), or if it would forget more than half of the saved cover colors (`npm run build -- --prune` to override).
 - **Export from Goodreads once before your first `npm run build`; until then the build stops** (it can't find your CSV).
 - **Design reference:** `docs/design/index.html` (the designer's mockups and the decisions behind them)
 
-Nothing here is published. There is no remote; hosting is your decision.
+**Publishing** is your decision and nothing is set up. When you decide: `site/` is the complete, ready-to-serve folder (no build needed to serve it), so hosting means deploying that folder (for example to a `gh-pages` branch for GitHub Pages). Everything on the page is public once hosted.
+
+There is no remote. Nothing here is published.
 
 ## Update your books (Goodreads)
 
 Your Goodreads profile is private, so the way in is the CSV export.
 
 1. On Goodreads: **My Books**, then **Import and export**, then **Export Library**. Download the `.csv` file when it is ready.
-2. Put it at `~/.agent-fleet/goodreads/goodreads_library_export.csv` (replacing the old one). Keep it out of this folder: the build refuses a CSV inside the repo, and `*.csv`, `*.numbers`, `*.xlsx`, `*.xls`, `*.ods`, `*.tsv` and anything named `goodreads*` are git-ignored as a safety net, but exports hold your private notes.
+2. Put it at `~/.agent-fleet/goodreads/goodreads_library_export.csv` (replacing the old one). Keep it out of this folder: the build refuses a CSV inside the repo, and `*.csv`, `*.numbers`, `*.xlsx`, `*.xls`, `*.ods`, `*.tsv` and files named `goodreads*` in the repo root or `goodreads_library_export*` anywhere are git-ignored as a safety net, but exports hold your private notes.
 3. Optional: open `content/books-extra.json` to mark favorites or add a "recommended by" slip.
    - The key is the book's Goodreads Book Id: the number in its Goodreads web address (`goodreads.com/book/show/`**`12345`**`-title`).
    - `"favorite": true` adds the gold star. `"recommendedBy": "Name"` adds the handwritten slip. `"color": "#8c5a78"` picks the spine color yourself (useful when Open Library has no cover or the wrong one). `"showReview": true` publishes that book's review when `reviews` is `"chosen"` (below).
 4. Build from your real export: `npm run build` (this is the one command that reads your real books).
-5. Look: `npm run serve`, open http://127.0.0.1:8080/books.html. Check the shelf and read the reviews that will show.
-6. When you like it, commit the changed `books.html` and `index.html`.
+5. Look: `npm run serve:site`, open http://127.0.0.1:8080/books.html. Check the shelf and read the reviews that will show. (`site/` is never committed.)
 
 **Which reviews are published** is the `reviews` setting in `site.config.json`. It is `"chosen"` (and also what you get if the setting is missing): **a review is published only if you mark that book.** To publish a review, add `"showReview": true` for that book in `content/books-extra.json`:
 
@@ -43,7 +44,8 @@ Notes:
 - The first build after adding books asks Open Library (once per book) for the cover so the spine can borrow its color. Colors are cached in `~/.agent-fleet/goodreads/spine-colors.json` (used only for your real export), **outside this repo** (a list of ISBNs would reveal your reading history, and the pages already carry the colors). The cache is pruned to the books in each build. The sample build keeps its own in `tests/fixtures/`.
 - `--offline` skips lookups (new books get a color picked from their title), and so does a Mac without `sips`; `--refresh-colors` retries books that had no cover. Add either after the path, e.g. `node scripts/build.mjs <file.csv> --offline`.
 - On the books page, each year's shelf reads left to right in the order you read them (oldest on the left, newest on the right); years run newest first from the top. The bookshelf in the study shows your most recent reads (date read, or date added when there is no read date), laid out the same way: oldest of those on the top left, newest on the bottom right.
-- Spine lettering is fitted automatically: long titles wrap into columns, shrink to a minimum size, and only then end in an ellipsis; a subtitle after a colon is left off the spine (the full title is in the book's label and tooltip). A long author name runs up the spine instead of across it. Favorites get their star but no special place. That rule is one small function (`selectHomeShelf` in `src/books.mjs`) if you want to change it.
+- Spine lettering is fitted automatically: long titles wrap into columns and shrink as far as needed (down to 5px) so the whole title shows; only a title that cannot fit even then ends in an ellipsis. A subtitle after a colon is left off the spine (the full title is in the book's label and tooltip). A long author name runs up the spine instead of across it.
+- Favorites get their gold star but no special place on the study's shelf; which books it shows is one small function (`selectHomeShelf` in `src/books.mjs`) if you want to change it.
 - A rating of 0 on Goodreads means "not rated": no dots are shown.
 
 ## Update your links
