@@ -21,7 +21,7 @@ after(() => { for (const d of made) for (const x of [d, `${d}-cache.json`]) fs.r
 function makeCopy() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'site-copy-'));
   made.push(dir);
-  for (const item of ['scripts', 'src', 'content', 'writing', 'site.config.json', 'package.json', 'assets']) {
+  for (const item of ['scripts', 'src', 'content', 'site.config.json', 'package.json', 'assets']) {
     fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true });
   }
   fs.mkdirSync(path.join(dir, 'projects'));
@@ -112,14 +112,6 @@ test('a site.config.json that holds JSON null falls back to defaults instead of 
   fs.writeFileSync(path.join(dir, 'site.config.json'), 'null');
   const r2 = runBuild(dir, FIXTURE, ['--offline']);
   assert.equal(r2.status, 0, `site.config.json containing "null" should fall back to defaults; got: ${r2.stderr}`);
-});
-
-test('an essay with a bad date or title is reported as a warning naming the file; the build still finishes', () => {
-  const dir = makeCopy();
-  fs.writeFileSync(path.join(dir, 'writing/broken.html'), '<meta name="essay-title" content="x"><meta name="essay-date" content="soon">');
-  const r = runBuild(dir, FIXTURE, ['--offline']);
-  assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stderr, /broken\.html/);
 });
 
 test('an empty CSV (header only) and a totally empty file build every page without crashing', () => {

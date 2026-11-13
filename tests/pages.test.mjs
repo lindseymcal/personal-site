@@ -6,14 +6,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildPages } from '../src/build-site.mjs';
-import { parseEssay } from '../src/site.mjs';
+import { readFeedCache } from '../src/feed.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (rel) => fs.readFileSync(path.join(REPO, rel), 'utf8');
 
 // every page the site ships: the generated ones and the hand-written essays
 const GENERATED = ['index.html', 'books.html', 'writing.html', 'projects.html', ...fs.readdirSync(path.join(REPO, 'projects')).filter((f) => f.endsWith('.html')).map((f) => `projects/${f}`)];
-const ESSAYS = fs.readdirSync(path.join(REPO, 'writing')).filter((f) => f.endsWith('.html') && !f.startsWith('_')).map((f) => `writing/${f}`);
+const ESSAYS = []; // essays now live on Substack, there are no local essay pages
 const ALL = [...GENERATED, ...ESSAYS];
 
 const body = (html) => html.slice(html.indexOf('<body'));
@@ -21,7 +21,7 @@ const anchors = (html) => [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map
 
 test('committed pages are up to date: byte-equal for pages that do not depend on the CSV, structure-only for the rest', () => {
   const cfg = JSON.parse(read('site.config.json'));
-  const essays = ESSAYS.map((f) => parseEssay(read(f), path.basename(f)));
+  const essays = readFeedCache(JSON.parse(read('content/substack-feed.json')), ['lindseymcal.substack.com']);
   const { pages } = buildPages({
     csvText: read('tests/fixtures/sample-goodreads.csv'),
     extras: JSON.parse(read('content/books-extra.json')),
@@ -98,7 +98,7 @@ test('each section has exactly one route in from the study (per layout: desk and
   const phone = home.slice(home.indexOf('class="wall-fit"'));
   for (const [name, part] of [['desk', desk], ['phone', phone]]) {
     const hrefs = anchors(part).map((a) => a.href);
-    for (const target of ['books.html', 'writing.html', 'projects.html', 'resume.pdf']) {
+    for (const target of ['books.html', 'writing.html', 'projects.html', 'assets/resume.pdf']) {
       assert.equal(hrefs.filter((h) => h === target).length, 1, `${name}: ${target}`);
     }
     assert.equal(hrefs.filter((h) => /^https:\/\/(lindseymarieartist\.com|www\.instagram|www\.linkedin)/.test(h)).length, 3, `${name}: art, instagram, linkedin`);
@@ -151,7 +151,8 @@ test('links that open a new tab say so, and carry rel=noopener', () => {
       assert.match(a.attrs, /rel="noopener"/, `${rel}: ${a.href}`);
       assert.ok(/opens in a new tab/i.test(a.label ?? '') || /opens in a new tab/i.test(a.inner), `${rel}: ${a.href} does not announce a new tab`);
     }
-    for (const a of anchors(body(read(rel)))) if (/^https?:/.test(a.href)) assert.match(a.attrs, /target="_blank"/, `${rel}: external ${a.href} opens in the same tab`);
+    // links to Zee's own Substack posts on the writing page open in the same tab, on purpose (her request)
+    for (const a of anchors(body(read(rel)))) if (/^https?:/.test(a.href) && !(rel === 'writing.html' && /^https:\/\/[a-z0-9-]+\.substack\.com\/p\//.test(a.href))) assert.match(a.attrs, /target="_blank"/, `${rel}: external ${a.href} opens in the same tab`);
   }
 });
 

@@ -11,9 +11,9 @@
 //                          [--offline] [--refresh-colors] [--allow-empty] [--prune] [--covers]
 //   npm run preview:covers   EXPERIMENT: your real books with real cover pictures, into preview/ only (see --covers)
 //
-// Reads:  the CSV, site.config.json, content/books-extra.json, content/projects.json, writing/*.html
+// Reads:  the CSV, site.config.json, content/books-extra.json, content/projects.json, the Substack feed (content/substack-feed.json when offline)
 // Writes: index.html, books.html, writing.html, projects.html, projects/<name>.html and the Substack
-//         link inside each essay (all into --out, default the repo itself), plus the cover-color cache.
+//         (all into --out, default the repo itself), plus the cover-color cache and content/substack-feed.json.
 //
 // Cover-color cache (ISBN -> spine color), kept OUT of the repo:
 //   - for your real export it is ~/.agent-fleet/goodreads/spine-colors.json
@@ -35,8 +35,8 @@ import { fileURLToPath } from 'node:url';
 import { buildPages } from '../src/build-site.mjs';
 import { csvToObjects, parseCsv } from '../src/csv.mjs';
 import { rowsToBooks } from '../src/books.mjs';
-import { parseEssay, applyEssayFooter } from '../src/site.mjs';
-import { essayFooterLink } from '../src/render.mjs';
+import { normalizeConfig } from '../src/site.mjs';
+import { fetchFeed, parseFeed, readFeedCache, feedCacheObject } from '../src/feed.mjs';
 import { fillColorCache, sipsAvailable, fillCoverFolder, jpegToBmp } from '../src/cover.mjs';
 import { parseBmp } from '../src/bmp.mjs';
 import { coverStats } from '../src/coverstats.mjs';
@@ -64,33 +64,32 @@ function readJson(rel, fallback) {
   }
 }
 
-// Reads the essays and regenerates each essay's Substack link from its own essay-substack meta tag.
-// outDir is where the result goes: the repo itself (essay files are rewritten in place) or a preview folder
-// (copies are written there and the real essay files are never touched).
-function readEssays(outDir) {
-  const dir = path.join(ROOT, 'writing');
-  const inPlace = outDir === ROOT;
-  const essays = [];
+// Essays come from the Substack feed (one request). The last good copy is kept in content/substack-feed.json
+// (her public writing, fine to commit) so offline builds, and builds when Substack is down, still work.
+// A preview build (--out) reads the cache and may fetch, but never rewrites the cache file.
+async function loadEssays({ feedUrl, offline, writeCache }) {
+  const cacheRel = 'content/substack-feed.json';
+  const extraHosts = feedUrl ? [new URL(feedUrl).hostname] : [];
+  const cached = readFeedCache(readJson(cacheRel, null), extraHosts);
   const problems = [];
-  if (!inPlace) fs.mkdirSync(path.join(outDir, 'writing'), { recursive: true });
-  for (const name of fs.existsSync(dir) ? fs.readdirSync(dir).sort() : []) {
-    if (!name.endsWith('.html') || name.startsWith('_')) continue;
-    const html = fs.readFileSync(path.join(dir, name), 'utf8');
-    const e = parseEssay(html, name);
-    if (e.error) { problems.push(e.error); continue; }
-    essays.push(e);
-    let result = html;
-    if (e.substackRejected) {
-      problems.push(`writing/${name}: essay-substack is not a usable web address (it must start with https://), so the footer link was left alone`);
-    } else if (e.substackUrl) {
-      const out = applyEssayFooter(html, essayFooterLink(e.substackUrl));
-      if (out.ok) result = out.html;
-      else problems.push(`writing/${name}: footer link left untouched (${out.reason})`);
+  if (!feedUrl) return { essays: cached, problems, source: 'cache (no substackFeedUrl in site.config.json)' };
+  if (offline) return { essays: cached, problems, source: 'cache (offline)' };
+  const got = await fetchFeed(feedUrl, { extraHosts });
+  if (got.status === 'ok') {
+    const entries = parseFeed(got.xml, extraHosts);
+    if (entries.length > 0) {
+      if (writeCache) {
+        const next = JSON.stringify(feedCacheObject(feedUrl, entries), null, 2) + '\n';
+        const file = path.join(ROOT, cacheRel);
+        if (!fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== next) fs.writeFileSync(file, next);
+      }
+      return { essays: entries, problems, source: `Substack feed ${feedUrl}` };
     }
-    if (inPlace) { if (result !== html) fs.writeFileSync(path.join(dir, name), result); }
-    else fs.writeFileSync(path.join(outDir, 'writing', name), result);
+    problems.push('the Substack feed had no usable posts; using the saved copy');
+  } else {
+    problems.push(`could not read the Substack feed (${got.message}); using the saved copy`);
   }
-  return { essays, problems };
+  return { essays: cached, problems, source: 'saved copy' };
 }
 
 // Splits "--name value" options from flags and the CSV path.
@@ -204,7 +203,8 @@ async function main() {
   }
 
   // ---- from here on we write (everything above only reads) ----
-  const { essays, problems } = readEssays(outDir);
+  const config = normalizeConfig(readJson('site.config.json', {}));
+  const { essays, problems, source } = await loadEssays({ feedUrl: config.substackFeedUrl, offline: flags.has('--offline'), writeCache: outDir === ROOT });
   const { pages, warnings } = buildPages({
     csvText,
     extras,
@@ -238,7 +238,7 @@ async function main() {
   if (outDir !== ROOT) console.log(`Preview written to ${path.relative(ROOT, outDir) || outDir}/ (open its index.html). No real pages were touched.`);
 
   console.log(`Wrote ${Object.keys(pages).length} pages: ${Object.keys(pages).join(', ')}`);
-  console.log(`Writing: ${essays.length} essays.`);
+  console.log(`Writing: ${essays.length} essays from the ${source}.`);
   for (const w of [...warnings, ...problems]) console.warn(`Warning: ${w}`);
 }
 

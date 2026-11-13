@@ -4,6 +4,7 @@
   "artInstagramUrl": "https://www.instagram.com/paintinthemail",
   "linkedinUrl": "https://www.linkedin.com/in/lindseymcallister/",
   "substackUrl": "https://substack.com/@lindseymcal",
-  "resumePath": "resume.pdf",
-  "reviews": "chosen"
+  "resumePath": "assets/resume.pdf",
+  "reviews": "chosen",
+  "substackFeedUrl": "https://lindseymcal.substack.com/feed"
 }

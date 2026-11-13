@@ -6,7 +6,7 @@ import { planShelf, bookDomId } from '../src/render.mjs';
 import { groupByYear, rowsToBooks } from '../src/books.mjs';
 import { csvToObjects } from '../src/csv.mjs';
 import { spineStyle } from '../src/spine.mjs';
-import { parseEssay } from '../src/site.mjs';
+import { normalizeEntry } from '../src/feed.mjs';
 
 const csvText = fs.readFileSync(new URL('./fixtures/sample-goodreads.csv', import.meta.url), 'utf8');
 const extras = {
@@ -16,7 +16,7 @@ const extras = {
   9000099: { favorite: true },
 };
 const colors = { 9780141439549: '#123456' }; // Middlemarch
-const essay = (t, d) => parseEssay(`<meta name="essay-title" content="${t}"><meta name="essay-date" content="${d}">`, `${t}.html`);
+const essay = (t, d, over = {}) => normalizeEntry({ title: t, url: `https://lindseymcal.substack.com/p/${encodeURIComponent(t)}`, date: d, ...over });
 const projectsRaw = [{ title: 'Agent fleet' }, { title: 'Painting app' }];
 
 const build = (over = {}) => buildPages({ csvText, extras, colors, configRaw: { name: 'Zee <b>' }, projectsRaw, essays: [essay('First', '2026-10-30')], ...over });
@@ -154,7 +154,7 @@ test('project pages: second small object goes back to Projects; no résumé link
 
 test('writing page lists essays and keeps Substack as a quiet envelope', () => {
   const html = build().pages['writing.html'];
-  assert.ok(html.includes('href="writing/First.html"'));
+  assert.ok(html.includes('<a href="https://lindseymcal.substack.com/p/First">First</a>')); // links to the post, same tab
   assert.ok(html.includes('class="env" href="https://your-name.substack.com/subscribe"'));
 });
 
@@ -218,7 +218,8 @@ test('a malformed cached color falls back to the title color with a warning', ()
   assert.match(r.pages['books.html'], /id="s-9000002"[^>]*--c:#[0-9a-f]{6}/);
 });
 
-test('essay file names are URL-encoded in links', () => {
-  const html = build({ essays: [{ ...essay('T', '2026-10-30'), slug: 'my essay#1' }] }).pages['writing.html'];
-  assert.ok(html.includes('href="writing/my%20essay%231.html"'));
+test('a post whose address is not on Substack never gets a link', () => {
+  assert.equal(essay('T', '2026-10-30', { url: 'https://evil.example.com/p/x' }), null);
+  assert.equal(essay('T', '2026-10-30', { url: 'javascript:alert(1)' }), null);
+  assert.ok(essay('T', '2026-10-30', { url: 'https://other.substack.com/p/x' }));
 });

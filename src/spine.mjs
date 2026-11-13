@@ -68,7 +68,8 @@ export function spineFontSize(title, width, height, caps = false) {
 // lines at build time (no script on the page) from rough letter widths, with a safety margin, and the CSS
 // clips and adds an ellipsis as a last resort, so the lettering can never reach the rule or the author.
 
-export const SPINE_MIN_FONT = 10;
+export const SPINE_MIN_FONT = 10;   // the smallest size we are happy with; smaller is used only when a title needs it
+export const SPINE_HARD_FLOOR = 5;  // below this nothing is readable: only then is a title cut with an ellipsis
 export const SPINE_MAX_FONT = 19;
 const SPINE_SIDE_PADDING = 8;      // total left+right breathing room, px
 const SPINE_LINE_HEIGHT = 1.18;    // column width as a multiple of the font size
@@ -124,10 +125,12 @@ export function wrapTitle(text, maxChars) {
   return lines;
 }
 
-// Picks the biggest font that fits, in as many columns as the spine is wide.
-// Returns { lines, fontSize, truncated }. At the smallest size, text that still does not fit is cut with an ellipsis.
+// Picks the biggest font that fits, in as many columns as the spine is wide. A title is NEVER cut off: the font
+// shrinks as far as it needs (down to the hard floor of 5px). Only if even that cannot hold the title is it cut with an
+// ellipsis, and `truncated` is true so the build can report it.
+// Returns { lines, fontSize, truncated }.
 //   room / columnsWidth / minFont let a caller (the cover labels) say exactly how much space there is
-export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT, room: roomOverride, columnsWidth, minFont = SPINE_MIN_FONT, maxFont = SPINE_MAX_FONT }) {
+export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT, room: roomOverride, columnsWidth, minFont = SPINE_HARD_FLOOR, maxFont = SPINE_MAX_FONT }) {
   const text = String(title).replace(/\s+/g, ' ').trim() || ' ';
   const room = roomOverride ?? titleRoom(height, favorite, authorHeight);
   const avail = columnsWidth ?? (width - SPINE_SIDE_PADDING);
@@ -253,7 +256,7 @@ export function coverSpineLayout(book, st, stats) {
     width: st.width, height: st.height, family: st.family, caps: st.caps,
     room: labelHeight - 8 - 5 - (showAuthor ? 14 : 0),
     columnsWidth: st.width - 10 - 6,
-    minFont: COVER_MIN_FONT,
+    minFont: SPINE_HARD_FLOOR, // never cut a title; COVER_MIN_FONT (11) is the size we aim for
   });
   return { ...label, showAuthor, lines: fitted.lines, fontSize: fitted.fontSize };
 }
@@ -272,7 +275,7 @@ export function homeSpineLayout(book, st, tierHeight) {
   const showAuthor = width >= HOME_THIN_SPINE && Boolean(book.spineAuthor);
   const room = height - 8 - (showAuthor ? 14 : 0) - 8;
   const fitted = fitSpineTitle(book.spineTitle, {
-    width, height, family: st.family, caps: st.caps, room, columnsWidth: width - 6, minFont: HOME_MIN_FONT, maxFont: HOME_MAX_FONT,
+    width, height, family: st.family, caps: st.caps, room, columnsWidth: width - 6, minFont: SPINE_HARD_FLOOR, maxFont: HOME_MAX_FONT,
   });
   return { width, height, showAuthor, lines: fitted.lines, fontSize: fitted.fontSize };
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title><![CDATA[Fixture]]></title><link>https://example.substack.com</link>
+<item><title><![CDATA[A quiet start]]></title><description><![CDATA[A short summary with <b>bold</b> &amp; more]]></description><link>https://example.substack.com/p/a-quiet-start</link><guid isPermaLink="false">1</guid><pubDate>Tue, 20 Oct 2026 23:29:19 GMT</pubDate><content:encoded><![CDATA[<p>FULL POST HTML THAT MUST NEVER BE IMPORTED <script>alert("body")</script></p>]]></content:encoded></item>
+<item><title><![CDATA[<script>alert("title")</script>Hostile <img src=x onerror=alert(1)> title]]></title><description><![CDATA[<img src=x onerror=alert(2)>Summary text]]></description><link>https://example.substack.com/p/hostile</link><pubDate>Mon, 05 Jan 2026 10:00:00 GMT</pubDate></item>
+<item><title>Entities &lt;script&gt;alert(3)&lt;/script&gt; &amp; "quotes"</title><description>Plain &amp; simple</description><link>https://example.substack.com/p/entities</link><pubDate>Fri, 02 Jan 2026 10:00:00 GMT</pubDate></item>
+<item><title><![CDATA[Elsewhere]]></title><link>https://evil.example.com/p/steal</link><pubDate>Thu, 01 Jan 2026 10:00:00 GMT</pubDate></item>
+<item><title><![CDATA[Script link]]></title><link>javascript:alert(4)</link><pubDate>Thu, 01 Jan 2026 10:00:00 GMT</pubDate></item>
+<item><title><![CDATA[No date]]></title><link>https://example.substack.com/p/no-date</link><pubDate>not a date</pubDate></item>
+<item><title><![CDATA[]]></title><link>https://example.substack.com/p/no-title</link><pubDate>Thu, 01 Jan 2026 10:00:00 GMT</pubDate></item>
+<item><title><![CDATA[Older, last year]]></title><description><![CDATA[Summary from 2025]]></description><link>https://example.substack.com/p/older</link><pubDate>Mon, 15 Dec 2025 08:00:00 GMT</pubDate></item>
+</channel></rss>

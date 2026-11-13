@@ -50,11 +50,13 @@ Notes:
 
 Edit `site.config.json` (your name, art site, art Instagram, LinkedIn, Substack, résumé path), then run `npm run build`. Pages are rebuilt from it.
 
-Résumé: put your PDF in this folder as `resume.pdf`, and then add the line `!resume.pdf` to `.gitignore` (all PDFs are ignored until you opt in) so it can be committed on purpose.
+Résumé: the published copy lives at `assets/resume.pdf` (set as `resumePath`). It has had the phone number removed. All PDFs are git-ignored except exactly that file (see `.gitignore`).
 
 ## Update your writing
 
-Essays are cross-posted to Substack. To add one: copy `docs/essay-template.html` to `writing/my-essay.html`, fill in the `essay-title`, `essay-date` (like 2026-10-30), `essay-summary` and `essay-substack` lines, write the text, then run `npm run build`. The build also rewrites the Substack link at the end of the essay from its `essay-substack` line (keep the two `substack-link` comment markers around one link; if they are damaged the build warns and leaves your essay alone). The notebook page lists every essay, newest first, grouped by year.
+Your essays come from your Substack (https://substack.com/@lindseymcal, publication feed `https://lindseymcal.substack.com/feed`, set as `substackFeedUrl` in `site.config.json`). Publish on Substack, then run `npm run build`: the build makes one request to the feed and lists each post (title, date, a short summary) in the notebook, newest first, grouped by year. Each entry links to the post on Substack, in the same tab. Only plain text is taken; post bodies are not imported.
+
+The last good copy of the list is kept in `content/substack-feed.json` (it is your public writing, so it is committed). If you are offline, or Substack is down, the build uses that copy and says so. There are no local essay pages.
 
 ## Update your projects
 

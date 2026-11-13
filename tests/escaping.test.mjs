@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { reviewToParagraphs, reviewToHtml, escapeHtml, mergeExtra, rowToBook } from '../src/books.mjs';
-import { normalizeConfig, normalizeProject, safeUrl, safeLocalPath, parseEssay, parseMetaTags } from '../src/site.mjs';
+import { normalizeConfig, normalizeProject, safeUrl, safeLocalPath } from '../src/site.mjs';
 import { buildPages } from '../src/build-site.mjs';
 import { spineStyle } from '../src/spine.mjs';
 import { DEFAULT_CONFIG as DEFAULT } from '../src/site.mjs';
@@ -258,57 +258,6 @@ test('projects: at most four tins on the study, all of them on the projects page
   const { pages } = buildPages({ csvText: csvOf({}), projectsRaw });
   assert.equal((pages['index.html'].match(/<div class="tin [a-d]">/g) || []).length, 4);
   assert.equal((pages['projects.html'].match(/class="tin"/g) || []).length, 6);
-});
-
-// ---- essay meta tags -----------------------------------------------------------------------------
-
-test('essays: meta content with entities is shown as text, never decoded into markup', () => {
-  const e = parseEssay('<meta name="essay-title" content="&lt;script&gt;alert(1)&lt;/script&gt;"><meta name="essay-date" content="2026-10-30"><meta name="essay-summary" content="&lt;img src=x onerror=alert(1)&gt;">', 'x.html');
-  assert.equal(e.error, undefined);
-  const html = buildPages({ csvText: csvOf({}), essays: [e] }).pages;
-  for (const [name, h] of Object.entries(html)) assert.equal(foreignMarkup(h), null, name);
-  assert.ok(html['writing.html'].includes('&lt;script&gt;alert(1)'));
-});
-
-test('essays: javascript: / data: substack link is dropped; https kept', () => {
-  const mk = (u) => parseEssay(`<meta name="essay-title" content="T"><meta name="essay-date" content="2026-10-30"><meta name="essay-substack" content="${u}">`, 't.html');
-  assert.equal(mk('javascript:alert(1)').substackUrl, '');
-  assert.equal(mk('data:text/html,x').substackUrl, '');
-  assert.equal(mk('https://x.substack.com/p/a').substackUrl, 'https://x.substack.com/p/a');
-});
-
-test('essays: summary is capped at 160 characters', () => {
-  const e = parseEssay(`<meta name="essay-title" content="T"><meta name="essay-date" content="2026-10-30"><meta name="essay-summary" content="${'s'.repeat(500)}">`, 't.html');
-  assert.equal(e.summary.length, 160);
-});
-
-test('essays: missing/invalid title or date returns an error naming the file', () => {
-  assert.match(parseEssay('<meta name="essay-date" content="2026-10-30">', 'a.html').error, /a\.html/);
-  assert.match(parseEssay('<meta name="essay-title" content="T">', 'b.html').error, /b\.html/);
-  assert.match(parseEssay('<meta name="essay-title" content="T"><meta name="essay-date" content="30/10/2026">', 'c.html').error, /c\.html/);
-  assert.match(parseEssay('', 'd.html').error, /d\.html/);
-});
-
-test('essays: an impossible date (month 13, day 99) is rejected rather than printed as "undefined 99"', () => {
-  for (const d of ['2026-13-01', '2026-00-10', '2026-02-45', '2026-10-00', '9999-99-99']) {
-    const e = parseEssay(`<meta name="essay-title" content="T"><meta name="essay-date" content="${d}">`, 'e.html');
-    if (e.error) continue;
-    const html = buildPages({ csvText: csvOf({}), essays: [e] }).pages['writing.html'];
-    assert.ok(!html.includes('undefined'), `date ${d} rendered "undefined" on writing.html`);
-    assert.fail(`date ${d} was accepted by parseEssay`);
-  }
-});
-
-test('essays: single-quoted and reordered attributes parse; a ">" inside content fails gracefully with an error', () => {
-  assert.equal(parseMetaTags(`<meta content='B' name='Essay-Title'>`)['essay-title'], 'B');
-  const e = parseEssay('<meta name="essay-title" content="a > b"><meta name="essay-date" content="2026-10-30">', 'g.html');
-  assert.ok(e.error || e.title === 'a > b');
-});
-
-test('essays: file name with odd characters cannot break the href', () => {
-  const e = parseEssay('<meta name="essay-title" content="T"><meta name="essay-date" content="2026-10-30">', 'a"><script>alert(1)</script>.html');
-  const html = buildPages({ csvText: csvOf({}), essays: [e] }).pages['writing.html'];
-  assert.equal(foreignMarkup(html), null);
 });
 
 test('spineStyle itself: a book override color wins and is lowercase', () => {

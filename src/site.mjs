@@ -1,4 +1,4 @@
-// Reading and checking the files Zee edits: site.config.json, content/projects.json, and essay pages.
+// Reading and checking the files Zee edits: site.config.json, content/projects.json, and the essay list.
 // Everything here takes plain values and returns plain values, so tests do not need files.
 import { decodeBasicEntities, slugify } from './books.mjs';
 
@@ -22,6 +22,7 @@ export const DEFAULT_CONFIG = {
   artInstagramUrl: 'https://www.instagram.com/your-handle',
   linkedinUrl: 'https://www.linkedin.com/in/your-name',
   substackUrl: 'https://your-name.substack.com',
+  substackFeedUrl: '', // the publication's RSS feed, e.g. https://name.substack.com/feed; empty = no feed
   resumePath: 'resume.pdf',
   reviews: 'chosen', // which reviews to publish: 'all' | 'chosen' | 'none' (default: only ones marked showReview)
 };
@@ -43,6 +44,7 @@ export function normalizeConfig(input = {}) {
     c[key] = safeUrl(raw[key], DEFAULT_CONFIG[key]);
   }
   c.reviews = normalizeReviewsSetting(raw.reviews);
+  c.substackFeedUrl = safeUrl(raw.substackFeedUrl, '');
   c.resumePath = safeLocalPath(raw.resumePath, DEFAULT_CONFIG.resumePath);
   return c;
 }
@@ -105,43 +107,7 @@ export function normalizeProjects(list) {
   return out;
 }
 
-// --- essays -----------------------------------------------------------------------------------
-
-// Reads <meta name="..." content="..."> tags out of an essay file. Returns { name: content }.
-export function parseMetaTags(html) {
-  const meta = {};
-  for (const tag of String(html).match(/<meta\b[^>]*>/gi) ?? []) {
-    const name = tag.match(/\bname\s*=\s*"([^"]*)"|\bname\s*=\s*'([^']*)'/i);
-    const content = tag.match(/\bcontent\s*=\s*"([^"]*)"|\bcontent\s*=\s*'([^']*)'/i);
-    if (name && content) meta[(name[1] ?? name[2]).toLowerCase()] = decodeBasicEntities(content[1] ?? content[2]);
-  }
-  return meta;
-}
-
-// An essay file needs:
-//   <meta name="essay-title" content="...">   <meta name="essay-date" content="2026-10-30">
-// and optionally  <meta name="essay-summary" content="...">  <meta name="essay-substack" content="https://...">
-// Returns { error } instead of throwing so the build can name the file with the problem.
-export function parseEssay(html, fileName) {
-  const meta = parseMetaTags(html);
-  const title = (meta['essay-title'] ?? '').trim();
-  const date = (meta['essay-date'] ?? '').trim();
-  const m = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!title) return { error: `${fileName}: add <meta name="essay-title" content="...">` };
-  if (!m || Number(m[2]) < 1 || Number(m[2]) > 12 || Number(m[3]) < 1 || Number(m[3]) > 31) return { error: `${fileName}: essay-date must be a real date like 2026-10-30` };
-  return {
-    slug: fileName.replace(/\.html$/, ''),
-    title,
-    date,
-    year: Number(m[1]),
-    month: Number(m[2]),
-    day: Number(m[3]),
-    summary: (meta['essay-summary'] ?? '').trim().slice(0, 160),
-    substackUrl: safeUrl(meta['essay-substack'], ''),
-    // the tag is there but is not a usable web address
-    substackRejected: (meta['essay-substack'] ?? '').trim() !== '' && safeUrl(meta['essay-substack'], '') === '',
-  };
-}
+// --- essays (they come from the Substack feed, see src/feed.mjs) ---
 
 // Newest first, grouped by year: [{ year, essays: [...] }]
 export function groupEssaysByYear(essays) {
@@ -158,26 +124,4 @@ export function groupEssaysByYear(essays) {
 // Years alternate between the left and right page of the notebook (newest on the left).
 export function splitYearsAcrossPages(groups) {
   return { left: groups.filter((_, i) => i % 2 === 0), right: groups.filter((_, i) => i % 2 === 1) };
-}
-
-// The essay footer link sits between two comment markers so the build can regenerate it from the
-// essay's essay-substack meta tag (one place to edit). To protect the essay text, it only rewrites when
-// there is exactly one opening and one closing marker, in that order, and what sits between them is just
-// a single <a ...>...</a> link. Otherwise the file is left alone and the reason says why.
-// Returns { ok: true, html } or { ok: false, reason }.
-export function applyEssayFooter(html, linkHtml) {
-  const OPEN = '<!--substack-link-->';
-  const CLOSE = '<!--/substack-link-->';
-  const opens = html.split(OPEN).length - 1;
-  const closes = html.split(CLOSE).length - 1;
-  if (opens === 0 && closes === 0) return { ok: false, reason: 'no substack-link markers around the footer link' };
-  if (opens !== 1 || closes !== 1) return { ok: false, reason: `expected exactly one opening and one closing substack-link marker, found ${opens} and ${closes}` };
-  const start = html.indexOf(OPEN) + OPEN.length;
-  const end = html.indexOf(CLOSE);
-  if (end < start) return { ok: false, reason: 'the closing substack-link marker comes before the opening one' };
-  const between = html.slice(start, end);
-  const single = /^\s*<a\b[^>]*>[\s\S]*?<\/a>\s*$/.test(between)
-    && (between.match(/<a\b/g) || []).length === 1 && (between.match(/<\/a>/g) || []).length === 1;
-  if (!single) return { ok: false, reason: 'the text between the markers is not just one link, so nothing was replaced' };
-  return { ok: true, html: `${html.slice(0, start)}\n      ${linkHtml}\n      ${html.slice(end)}` };
 }

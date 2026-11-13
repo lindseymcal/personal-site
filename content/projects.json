@@ -23,9 +23,9 @@
     "learned": "[Placeholder] What you would tell a colleague you learned from it.",
     "image": {
       "src": "assets/projects/agent-fleet.jpg",
-      "alt": "The agent fleet's pet room: a chalkboard lists what each AI helper is doing, and cartoon animals for the lead, coder, tester, reviewer and others sit on a braided rug (sample data)",
+      "alt": "The agent fleet's pet room: a chalkboard lists what each AI helper is doing and which projects are in progress, and cartoon animals for the lead, coder, designer, reviewer, tester, social and Codex helpers sit on a braided rug with speech bubbles",
       "width": 1000,
-      "height": 625
+      "height": 618
     }
   },
   {

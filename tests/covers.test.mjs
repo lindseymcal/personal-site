@@ -72,12 +72,14 @@ test('label colors: a dark cover gets light text, a light cover gets dark ink', 
 const bookOf = (over) => ({ title: 'T', spineTitle: 'A Rather Long Title For A Cover', spineAuthor: 'Someone', pages: 300, pubYear: 1900, color: '', favorite: false, ...over });
 const stats = { main: '#5e7a49', dark: '#203018', light: '#c0d0a0', busy: false };
 
-test('cover spine layout: titles stay at 11px or larger, the label is the 15%..91% band, thin spines drop the author', () => {
+test('cover spine layout: titles are never cut (they prefer 11px but shrink to fit), thin spines drop the author', () => {
   for (const pages of [1, 50, 100, 300, 800, 2000]) for (const spineTitle of ['It', 'The Hitchhiker\'s Guide to the Galaxy', 'x'.repeat(150)]) {
     const book = bookOf({ pages, spineTitle });
     const st = spineStyle(book, undefined);
     const lay = coverSpineLayout(book, st, stats);
-    assert.ok(lay.fontSize >= COVER_MIN_FONT, `${pages} pages: ${lay.fontSize}`);
+    assert.ok(lay.fontSize >= 5, `${pages} pages: ${lay.fontSize}`);
+    if (spineTitle === 'It') assert.ok(lay.fontSize >= COVER_MIN_FONT, 'short titles keep the 11px or larger size');
+    if (spineTitle !== 'x'.repeat(150)) assert.ok(!lay.lines.join('').includes('…'));
     assert.equal(lay.showAuthor, st.width >= 28, `width ${st.width}`);
     assert.ok(lay.lines.length >= 1);
   }
@@ -171,7 +173,7 @@ test('cover folder: private modes, skips cached ones, remembers "no cover", neve
 const runBuild = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...args], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
 function makeCopy() {
   const dir = tempDir();
-  for (const item of ['scripts', 'src', 'content', 'writing', 'site.config.json', 'package.json', 'assets']) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true });
+  for (const item of ['scripts', 'src', 'content', 'site.config.json', 'package.json', 'assets']) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true });
   fs.mkdirSync(path.join(dir, 'projects'));
   return dir;
 }

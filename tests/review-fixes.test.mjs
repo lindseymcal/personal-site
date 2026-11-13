@@ -11,7 +11,8 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { buildPages } from '../src/build-site.mjs';
 import { applyReviewPolicy, rowToBook, isTruthyFlag } from '../src/books.mjs';
-import { normalizeConfig, applyEssayFooter, parseEssay } from '../src/site.mjs';
+import { normalizeConfig } from '../src/site.mjs';
+import { normalizeEntry } from '../src/feed.mjs';
 import { fetchCoverColor, sipsAvailable } from '../src/cover.mjs';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -23,12 +24,12 @@ after(() => { for (const d of made) for (const x of [d, `${d}-c.json`, `${d}-my-
 function tempDir() { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'rf-')); made.push(d); return d; }
 function makeCopy() {
   const dir = tempDir();
-  for (const item of ['scripts', 'src', 'content', 'writing', 'site.config.json', 'package.json', 'assets']) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true });
+  for (const item of ['scripts', 'src', 'content', 'site.config.json', 'package.json', 'assets']) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true });
   fs.mkdirSync(path.join(dir, 'projects'));
   return dir;
 }
 const run = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...(args.includes('--cache') || args.length === 0 ? args : [...args, '--cache', `${dir}-c.json`])], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
-const essay = (t, d) => parseEssay(`<meta name="essay-title" content="${t}"><meta name="essay-date" content="${d}">`, `${t}.html`);
+const essay = (t, d) => normalizeEntry({ title: t, url: `https://lindseymcal.substack.com/p/${t}`, date: d });
 const section = (html, id) => html.match(new RegExp(`<section class="pull" id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
 test('the build refuses to run with no CSV path, says why, and writes nothing', () => {
@@ -124,7 +125,7 @@ test('build:sample writes a preview and changes nothing outside preview/', () =>
   const r = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), FIXTURE, ...sampleArgs.slice(1), '--offline'], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
   assert.equal(r.status, 0, r.stderr);
   assert.deepEqual(snap(), before, 'something outside preview/ changed');
-  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'writing/placeholder-essay-one.html', 'assets/site.css']) {
+  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'assets/site.css']) {
     assert.ok(fs.existsSync(path.join(dir, 'preview', f)), `preview/${f}`);
   }
   assert.notEqual(fs.readFileSync(path.join(dir, 'preview/index.html'), 'utf8'), 'REAL PAGE');
@@ -149,7 +150,9 @@ test('without sips: one clear note, no lookups at all', () => {
   const r = spawnSync(process.execPath, ['--import', trap, path.join(dir, 'scripts/build.mjs'), FIXTURE, '--cache', `${dir}-c.json`], { cwd: dir, encoding: 'utf8', env: { PATH: '', HOME: dir } });
   assert.equal(r.status, 0, r.stderr);
   assert.equal((r.stderr.match(/"sips" was not found/g) || []).length, 1);
-  assert.ok(!fs.existsSync(path.join(dir, 'fetch.log')));
+  // the one request the build may make is the Substack feed; there must be no cover lookups
+  const log = fs.existsSync(path.join(dir, 'fetch.log')) ? fs.readFileSync(path.join(dir, 'fetch.log'), 'utf8') : '';
+  assert.ok(!/openlibrary/.test(log), log);
 });
 
 test('sipsAvailable asks once and reports a missing tool', () => {
@@ -200,7 +203,7 @@ test('the notebook keeps ONE scroll box per page, however many years of essays t
   const html = buildPages({ csvText, essays }).pages['writing.html'];
   assert.equal((html.match(/class="page-in"/g) || []).length, 2); // left page, right page
   assert.equal((html.match(/<h2 class="year">/g) || []).length, 6);
-  for (let i = 0; i < 6; i++) assert.ok(html.includes(`href="writing/E${i}.html"`));
+  for (let i = 0; i < 6; i++) assert.ok(html.includes(`href="https://lindseymcal.substack.com/p/E${i}"`));
   const left = html.slice(html.indexOf('class="page l"'), html.indexOf('class="page r"'));
   assert.equal((left.match(/class="page-in"/g) || []).length, 1);
   assert.deepEqual([...left.matchAll(/<h2 class="year">(\d+)/g)].map((m) => m[1]), ['2026', '2024', '2022']);
@@ -234,36 +237,6 @@ test('cover download checks: host, image type, size', async () => {
   assert.match(r5.message, /should not be reached/);
 });
 
-test('essay footer: the essay-substack meta is the single source of the footer link', () => {
-  const html = '<footer>\n<!--substack-link-->\n<a href="old">x</a>\n<!--/substack-link-->\n</footer>';
-  const out = applyEssayFooter(html, '<a href="new">y</a>');
-  assert.equal(out.ok, true);
-  assert.ok(out.html.includes('href="new"') && !out.html.includes('href="old"'));
-  assert.equal(applyEssayFooter('<footer></footer>', 'x').ok, false);
-
-  const dir = makeCopy();
-  const file = path.join(dir, 'writing/placeholder-essay-one.html');
-  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('content="https://substack.com/@lindseymcal"', 'content="https://zee.substack.com/p/changed"'));
-  const r = run(dir, [FIXTURE, '--offline']);
-  assert.equal(r.status, 0, r.stderr);
-  const updated = fs.readFileSync(file, 'utf8');
-  assert.ok(updated.includes('<a href="https://zee.substack.com/p/changed" target="_blank"'));
-  assert.ok(!updated.includes('href="https://substack.com/@lindseymcal"'));
-});
-
-test('committed essays already match their own essay-substack meta', () => {
-  for (const f of fs.readdirSync(path.join(REPO, 'writing')).filter((n) => n.endsWith('.html'))) {
-    const html = fs.readFileSync(path.join(REPO, 'writing', f), 'utf8');
-    const e = parseEssay(html, f);
-    assert.ok(html.includes(`<a href="${e.substackUrl}" target="_blank"`), f);
-  }
-});
-
-test('the essay template lives in docs/, not in the served writing/ folder', () => {
-  assert.ok(fs.existsSync(path.join(REPO, 'docs/essay-template.html')));
-  assert.ok(!fs.existsSync(path.join(REPO, 'writing/_template.html')));
-});
-
 test('study tab order follows the visual order: top row first', () => {
   const html = buildPages({ csvText }).pages['index.html'];
   const room = html.slice(html.indexOf('fit-room'), html.indexOf('wall-fit'));
@@ -277,49 +250,6 @@ test('.gitignore: PDFs need an explicit opt-in and only the one fixture CSV is a
   assert.ok(g.includes('*.csv'));
   assert.ok(g.includes('!tests/fixtures/sample-goodreads.csv'));
   assert.ok(!g.some((l) => /^!.*\*/.test(l)));
-});
-
-test('footer rewrite never deletes essay text: only one marker pair around a single link', () => {
-  const O = '<!--substack-link-->', C = '<!--/substack-link-->';
-  const link = '<a href="n">new</a>';
-  const body = '<p>My essay text, which must survive.</p>';
-  // orphan opening marker, with essay text after it and a closing marker much later
-  const orphan = `${O}${body}<footer>${O}\n<a href="old">x</a>\n${C}</footer>`;
-  assert.equal(applyEssayFooter(orphan, link).ok, false);
-  // closing before opening
-  assert.equal(applyEssayFooter(`${C}${body}${O}`, link).ok, false);
-  // only an opening marker
-  assert.equal(applyEssayFooter(`${body}${O}<a href="old">x</a>`, link).ok, false);
-  // text between the markers that is not just a link
-  const withText = `${O}${body}<a href="old">x</a>${C}`;
-  const r = applyEssayFooter(withText, link);
-  assert.equal(r.ok, false);
-  assert.match(r.reason, /not just one link/);
-  // two links between the markers
-  assert.equal(applyEssayFooter(`${O}<a href="1">a</a><a href="2">b</a>${C}`, link).ok, false);
-  // the happy path keeps everything around the markers byte for byte
-  const good = `<main>${body}</main><footer>${O}\n  <a href="old" target="_blank">old <b>bold</b></a>\n${C}</footer><p>after</p>`;
-  const ok = applyEssayFooter(good, link);
-  assert.equal(ok.ok, true);
-  assert.ok(ok.html.startsWith(`<main>${body}</main><footer>${O}`));
-  assert.ok(ok.html.endsWith(`${C}</footer><p>after</p>`));
-  assert.ok(ok.html.includes(link) && !ok.html.includes('old'));
-});
-
-test('the build leaves a damaged essay untouched and warns; a rejected essay-substack address is reported', () => {
-  const dir = makeCopy();
-  const damaged = path.join(dir, 'writing/placeholder-essay-one.html');
-  const text = fs.readFileSync(damaged, 'utf8').replace('<!--/substack-link-->', '');
-  fs.writeFileSync(damaged, text);
-  const bad = path.join(dir, 'writing/placeholder-essay-two.html');
-  const badText = fs.readFileSync(bad, 'utf8').replace(/content="https:\/\/substack\.com\/@lindseymcal"/, 'content="javascript:alert(1)"');
-  fs.writeFileSync(bad, badText);
-  const r = run(dir, [FIXTURE, '--offline']);
-  assert.equal(r.status, 0, r.stderr);
-  assert.equal(fs.readFileSync(damaged, 'utf8'), text);
-  assert.equal(fs.readFileSync(bad, 'utf8'), badText);
-  assert.match(r.stderr, /placeholder-essay-one\.html: footer link left untouched/);
-  assert.match(r.stderr, /placeholder-essay-two\.html: essay-substack is not a usable web address/);
 });
 
 test('--out may only be preview/ (or inside it); anything else is refused and nothing is written', () => {

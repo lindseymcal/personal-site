@@ -11,7 +11,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildPages } from '../src/build-site.mjs';
-import { parseEssay } from '../src/site.mjs';
+import { readFeedCache } from '../src/feed.mjs';
 
 const REAL_REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -21,7 +21,7 @@ const REAL_REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
 const REPO = fs.mkdtempSync(path.join(os.tmpdir(), 'fit-site-'));
 {
   const read = (rel) => fs.readFileSync(path.join(REAL_REPO, rel), 'utf8');
-  const essays = fs.readdirSync(path.join(REAL_REPO, 'writing')).filter((f) => f.endsWith('.html') && !f.startsWith('_')).map((f) => parseEssay(read(`writing/${f}`), f));
+  const essays = readFeedCache(JSON.parse(read('content/substack-feed.json')), ['lindseymcal.substack.com']);
   const { pages } = buildPages({
     csvText: read('tests/fixtures/sample-goodreads.csv'),
     extras: JSON.parse(read('content/books-extra.json')),
@@ -33,7 +33,6 @@ const REPO = fs.mkdtempSync(path.join(os.tmpdir(), 'fit-site-'));
   fs.mkdirSync(path.join(REPO, 'projects'));
   for (const [rel, html] of Object.entries(pages)) fs.writeFileSync(path.join(REPO, rel), html);
   fs.cpSync(path.join(REAL_REPO, 'assets'), path.join(REPO, 'assets'), { recursive: true });
-  fs.cpSync(path.join(REAL_REPO, 'writing'), path.join(REPO, 'writing'), { recursive: true });
 }
 after(() => fs.rmSync(REPO, { recursive: true, force: true }));
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -183,7 +182,7 @@ test('phone 390x844: the phone layout takes over, nothing scrolls sideways, labe
   const tab = await openTab();
   await tab.view(390, 844, { mobile: true });
   const problems = [];
-  for (const page of ['index.html', 'books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'writing/placeholder-essay-one.html']) {
+  for (const page of ['index.html', 'books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html']) {
     await tab.open(page);
     const m = await tab.eval(MEASURE);
     if (m.canScrollX || m.bodyScrollW > 391 || m.scrollW > 391) problems.push(`${page}: sideways overflow (scrollW ${m.scrollW}, body ${m.bodyScrollW})`);
@@ -219,7 +218,7 @@ test('real Tab key: the first stop on every inner page is "Back to the study"; o
   const first = `(() => { const e = document.activeElement; return e && e !== document.body ? { label: e.getAttribute('aria-label'), href: e.getAttribute('href') } : null; })()`;
   for (const [w, h, mobile] of [[1440, 900, false], [390, 844, true]]) {
     await tab.view(w, h, { mobile });
-    for (const page of ['books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'writing/placeholder-essay-two.html']) {
+    for (const page of ['books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html']) {
       await tab.open(page);
       await tab.tab();
       const f = await tab.eval(first);

@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   safeUrl, safeLocalPath, normalizeConfig, DEFAULT_CONFIG, substackSubscribeUrl, normalizeProject, normalizeProjects,
-  parseMetaTags, parseEssay, groupEssaysByYear, splitYearsAcrossPages,
+  groupEssaysByYear, splitYearsAcrossPages,
 } from '../src/site.mjs';
+import { normalizeEntry } from '../src/feed.mjs';
 
 test('safeUrl allows only http(s) links', () => {
   assert.equal(safeUrl('https://example.com/a?b=1'), 'https://example.com/a?b=1');
@@ -53,34 +54,8 @@ test('normalizeProjects drops untitled and duplicate projects', () => {
   assert.deepEqual(normalizeProjects('nope'), []);
 });
 
-const essayHtml = `<!doctype html><head>
-<meta name="essay-title" content="On &amp; off">
-<meta content="2026-10-30" name="essay-date">
-<meta name='essay-summary' content='A summary'>
-<meta name="essay-substack" content="https://z.substack.com/p/x">
-</head>`;
-
-test('parseMetaTags reads either attribute order and decodes entities', () => {
-  const m = parseMetaTags(essayHtml);
-  assert.equal(m['essay-title'], 'On & off');
-  assert.equal(m['essay-date'], '2026-10-30');
-  assert.equal(m['essay-summary'], 'A summary');
-});
-
-test('parseEssay', () => {
-  const e = parseEssay(essayHtml, 'on-and-off.html');
-  assert.equal(e.slug, 'on-and-off');
-  assert.deepEqual([e.year, e.month, e.day], [2026, 10, 30]);
-  assert.equal(e.substackUrl, 'https://z.substack.com/p/x');
-});
-
-test('parseEssay reports what is missing, naming the file', () => {
-  assert.match(parseEssay('<head></head>', 'a.html').error, /a\.html.*essay-title/);
-  assert.match(parseEssay('<meta name="essay-title" content="T"><meta name="essay-date" content="Oct 3">', 'b.html').error, /b\.html.*essay-date/);
-});
-
 test('essays group by year, newest first, and split across the two pages', () => {
-  const mk = (t, d) => parseEssay(`<meta name="essay-title" content="${t}"><meta name="essay-date" content="${d}">`, `${t}.html`);
+  const mk = (t, d) => normalizeEntry({ title: t, url: `https://x.substack.com/p/${t}`, date: d });
   const groups = groupEssaysByYear([mk('a', '2024-01-02'), mk('b', '2026-05-01'), mk('c', '2026-09-01'), mk('d', '2025-03-03')]);
   assert.deepEqual(groups.map((g) => g.year), [2026, 2025, 2024]);
   assert.deepEqual(groups[0].essays.map((e) => e.title), ['c', 'b']);

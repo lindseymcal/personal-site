@@ -1,7 +1,7 @@
 // Spine typography: titles and authors must always fit inside the spine and never cross the rule.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fitSpineTitle, wrapTitle, titleRoom, letterWidthFactor, spineStyle, authorLayout, SPINE_MIN_FONT, SPINE_MAX_FONT } from '../src/spine.mjs';
+import { fitSpineTitle, wrapTitle, titleRoom, letterWidthFactor, spineStyle, authorLayout, SPINE_MIN_FONT, SPINE_HARD_FLOOR, SPINE_MAX_FONT } from '../src/spine.mjs';
 import { spineTitle, rowsToBooks } from '../src/books.mjs';
 import { csvToObjects } from '../src/csv.mjs';
 import { packNewestChronologically } from '../src/layout.mjs';
@@ -14,7 +14,7 @@ const TITLES = [
   'The Curious Incident of the Dog in the Night-Time and Other Very Long Words',
   'A Very Long Title That Goes On And On And On Forever And Ever Amen And Then Some More',
   'Supercalifragilisticexpialidocious Pneumonoultramicroscopicsilicovolcanoconiosis',
-  'Ａ', 'Ünïcödé Tïtle With Àccents', 'x'.repeat(200), 'The Life and Strange Surprizing Adventures of Robinson Crusoe of York, Mariner',
+  'Ａ', 'Ünïcödé Tïtle With Àccents', 'x'.repeat(60), 'The Life and Strange Surprizing Adventures of Robinson Crusoe of York, Mariner',
 ];
 
 // the same estimate the code uses, rebuilt here as a check on what comes out
@@ -31,7 +31,11 @@ test('every extreme title, on every typeface, spine width and height, fits insid
     const o = { width, height, family, caps, favorite, authorHeight };
     const r = fitSpineTitle(title, o);
     assert.ok(r.lines.length >= 1, title);
-    assert.ok(r.fontSize >= SPINE_MIN_FONT && r.fontSize <= SPINE_MAX_FONT, `${r.fontSize}`);
+    assert.ok(r.fontSize >= SPINE_HARD_FLOOR && r.fontSize <= SPINE_MAX_FONT, `${r.fontSize}`);
+    // can the title possibly fit at the 5px floor? (rough room check; only hopeless combinations may be cut)
+    const capacity = Math.floor((width - 8) / (SPINE_HARD_FLOOR * 1.18)) * Math.floor(titleRoom(height, favorite, authorHeight) / (SPINE_HARD_FLOOR * (letterWidthFactor(family, caps) * 1.1)));
+    if (capacity >= title.length * 1.3) assert.equal(r.truncated, false, `${title.slice(0, 30)} w${width} h${height} fav${favorite} ah${authorHeight}: a title is never cut off`);
+    if (!r.truncated) assert.equal(r.lines.join('').replace(/\s/g, ''), title.replace(/\s/g, ''), 'every letter of the title is there');
     assert.ok(fits(r, o), `${title.slice(0, 30)} | ${family} w${width} h${height} fav${favorite}: ${JSON.stringify(r)}`);
   }
 });
@@ -51,12 +55,14 @@ test('long titles wrap onto several lines (columns) before they shrink to the mi
   assert.ok(r.fontSize > SPINE_MIN_FONT);
 });
 
-test('as a last resort the title is cut with an ellipsis, at the smallest size', () => {
-  const r = fitSpineTitle('x'.repeat(200), { width: 30, height: 230, family: 'Cinzel' });
-  assert.equal(r.truncated, true);
-  assert.equal(r.fontSize, SPINE_MIN_FONT);
-  assert.ok(r.lines.at(-1).endsWith('…'));
-  assert.ok(r.lines.every((l) => l.length < 60));
+test('the title shrinks as far as it needs instead of being cut; only a hopeless one meets the 5px floor and an ellipsis', () => {
+  const long = fitSpineTitle('The Life and Strange Surprizing Adventures of Robinson Crusoe of York, Mariner', { width: 28, height: 240, family: 'Cinzel' });
+  assert.equal(long.truncated, false);
+  assert.ok(long.fontSize < SPINE_MIN_FONT && long.fontSize >= SPINE_HARD_FLOOR, `${long.fontSize}`); // smaller than 10px, but whole
+  const hopeless = fitSpineTitle('x'.repeat(400), { width: 30, height: 230, family: 'Cinzel' });
+  assert.equal(hopeless.truncated, true);
+  assert.equal(hopeless.fontSize, SPINE_HARD_FLOOR);
+  assert.ok(hopeless.lines.at(-1).endsWith('…'));
 });
 
 test('a thin spine never gets text wider than it is', () => {
@@ -109,7 +115,7 @@ test('extreme fixture books build into spines with fitted lines', () => {
   assert.equal(books.length, 4);
   for (const b of books) {
     const st = spineStyle(b, undefined);
-    assert.ok(st.lines.length >= 1 && st.fontSize >= SPINE_MIN_FONT);
+    assert.ok(st.lines.length >= 1 && st.fontSize >= SPINE_HARD_FLOOR);
   }
   const html = buildPages({ csvText: header + rows }).pages['books.html'];
   assert.ok(html.includes('<span class="a v" style="--ah:80px"><span>Vanderhoeven-Longsurnamington</span></span>')); // runs up the spine, clipped with an ellipsis if still too long ...

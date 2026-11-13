@@ -1,5 +1,5 @@
 // Turns data into page HTML. Every function returns a string; none of them read files.
-// ALL text that came from a CSV, a JSON file or an essay is passed through escapeHtml before it is written.
+// ALL text that came from a CSV, a JSON file or the Substack feed is passed through escapeHtml before it is written.
 import { escapeHtml as esc, reviewToHtml, selectHomeShelf, MONTHS } from './books.mjs';
 import { packIntoRows, packNewestChronologically } from './layout.mjs';
 import { spineStyle, homeSpineLayout, coverFontSize, coverSpineLayout } from './spine.mjs';
@@ -332,14 +332,9 @@ function tocHtml(groups) {
   return `<div class="page-in">
 ${groups.map((g) => `        <h2 class="year">${g.year}</h2>
         <ul class="toc">
-${g.essays.map((e) => `          <li><a href="writing/${esc(encodeURIComponent(e.slug))}.html">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTHS[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
+${g.essays.map((e) => `          <li><a href="${esc(e.url)}">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTHS[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
         </ul>`).join('\n')}
       </div>`;
-}
-
-// The quiet Substack link at the end of an essay. The essay's own essay-substack meta tag is the single source.
-export function essayFooterLink(url) {
-  return `<a href="${esc(url)}" target="_blank" rel="noopener"><i class="env" aria-hidden="true"></i><span>Get the next one by email, on Substack<span class="sr"> (opens in a new tab)</span></span></a>`;
 }
 
 export function renderWriting({ config, groups, splitPages }) {
