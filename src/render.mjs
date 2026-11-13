@@ -184,7 +184,7 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
 
 const ROW_HEIGHT = 348;
 const SPINE_GAP = 3;
-const ROW_CAPACITY = 1022 - 24 - 14; // tier width, minus the bookend and room for one leaning book
+const ROW_CAPACITY = 1022 - 26; // tier width inside its padding, minus the bookend at the end
 
 // Letters, digits, - and _ only: safe inside an id and a CSS selector.
 export function bookDomId(id) {
