@@ -113,12 +113,17 @@ test('with covers: lazy local images on spines, the full cover when pulled out, 
   for (const m of html.matchAll(/<img [^>]*src="([^"]*)"/g)) assert.match(m[1], /^covers\/[0-9X]{10,13}\.jpg$/, 'only local relative paths');
   // labels follow the rules: solid label from the cover's own color, inset by the CSS
   assert.match(html, /--lbl:rgba\(42,58,90,0\.88\)/);
-  assert.ok(!/<img/.test(pages['index.html']), 'the study home shelf has no pictures');
+  assert.ok(!/covers\//.test(pages['index.html']), 'the study home shelf has no cover pictures');
 });
 
 test('without covers the pages contain no image paths at all (the real site never carries covers)', () => {
   const { pages } = buildPages({ csvText });
-  for (const [name, html] of Object.entries(pages)) { assert.ok(!/<img/.test(html), name); assert.ok(!html.includes('covers/'), name); }
+  for (const [name, html] of Object.entries(pages)) {
+    assert.ok(!html.includes('covers/'), name);
+    // the only picture is Zee's painting in the study (a local file shipped on purpose)
+    const imgs = [...html.matchAll(/<img [^>]*src="([^"]*)"/g)].map((m) => m[1]);
+    assert.deepEqual(imgs, name === 'index.html' ? ['assets/art/fort-point-fog.jpg', 'assets/art/fort-point-fog.jpg'] : [], name);
+  }
 });
 
 test('.gitignore blocks any covers/ folder', () => {
@@ -212,7 +217,7 @@ globalThis.fetch = async (url) => ({ status: 200, ok: true, url: 'https://covers
   assert.ok(!fs.existsSync(path.join(dir, 'covers')));
   assert.ok(!fs.existsSync(path.join(dir, 'index.html')), 'the real site pages are untouched');
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (['preview', '.agent-fleet'].includes(e.name) && d === dir ? [] : walk(path.join(d, e.name))) : [path.join(d, e.name)]));
-  assert.deepEqual(walk(dir).filter((f) => /\.(jpe?g|png|gif|webp)$/i.test(f) && !f.endsWith('x.jpg')), [], 'no images anywhere outside preview/ and the private cache');
+  assert.deepEqual(walk(dir).filter((f) => /\.(jpe?g|png|gif|webp)$/i.test(f) && !f.endsWith('x.jpg') && !f.includes('/assets/art/')), [], 'no images anywhere outside preview/ and the private cache');
   // a later preview WITHOUT --covers removes the pictures from preview/
   const plain = runBuild(dir, [FIXTURE, '--out', path.join(dir, 'preview'), '--cache', `${dir}-c.json`, '--offline']);
   assert.equal(plain.status, 0, plain.stderr);

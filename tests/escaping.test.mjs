@@ -27,7 +27,9 @@ export function tagsIn(html) {
   return out;
 }
 function foreignMarkup(html) {
-  const noOwn = html.replace(/<script>[\s\S]*?<\/script>/, '').replace(/<style>[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  const noOwn = html.replace(/<script>[\s\S]*?<\/script>/, '').replace(/<style>[\s\S]*?<\/style>/g, '').replace(/<!--[\s\S]*?-->/g, '')
+    // the one picture we ship on purpose: Zee's painting in the frame (a fixed local file, fixed alt text)
+    .replace(/<img src="assets\/art\/fort-point-fog\.jpg" width="720" height="540" alt="[^"<>]*" decoding="async">/g, '');
   for (const t of tagsIn(noOwn)) {
     if (!OK_TAGS.has(t.name)) return [`<${t.name}>`];
     for (const a of t.attrs) {

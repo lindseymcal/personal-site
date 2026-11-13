@@ -101,7 +101,7 @@ test('each section has exactly one route in from the study (per layout: desk and
     for (const target of ['books.html', 'writing.html', 'projects.html', 'resume.pdf']) {
       assert.equal(hrefs.filter((h) => h === target).length, 1, `${name}: ${target}`);
     }
-    assert.equal(hrefs.filter((h) => /^https:\/\/(art\.|www\.instagram|www\.linkedin)/.test(h)).length, 3, `${name}: art, instagram, linkedin`);
+    assert.equal(hrefs.filter((h) => /^https:\/\/(lindseymarieartist\.com|www\.instagram|www\.linkedin)/.test(h)).length, 3, `${name}: art, instagram, linkedin`);
     assert.equal(hrefs.length, 7, `${name}: unexpected extra links: ${hrefs}`);
   }
   // inner pages do not link sideways to other sections (only home, plus the deep pages' one extra object)
@@ -183,9 +183,10 @@ test('ids are unique on every page', () => {
 });
 
 test('no external requests except Google Fonts: no images, scripts, iframes, imports, Open Library, or remote CSS urls', () => {
-  const css = fs.readdirSync(path.join(REPO, 'assets')).map((f) => `assets/${f}`);
+  const css = fs.readdirSync(path.join(REPO, 'assets')).filter((f) => f.endsWith('.css')).map((f) => `assets/${f}`);
   for (const rel of [...ALL, ...css]) {
-    const text = read(rel);
+    // the one picture we ship on purpose is Zee's painting in the frame (a fixed local file)
+    const text = read(rel).replace(/<img src="assets\/art\/fort-point-fog\.jpg" width="720" height="540" alt="[^"<>]*" decoding="async">/g, '');
     assert.ok(!/openlibrary|covers\./i.test(text), `${rel}: mentions Open Library`);
     assert.ok(!/<img\b|<iframe\b|<embed\b|<object\b|<video\b|<audio\b|<source\b|<script[^>]*\ssrc=|<form\b/i.test(text), `${rel}: loads a resource tag`);
     assert.ok(!/@import|url\(\s*["']?(https?:)?\/\//i.test(text), `${rel}: remote @import/url()`);
@@ -209,7 +210,7 @@ test('scripts: only the one tiny inline fit script on scene pages, none elsewher
 
 test('reduced motion: every animation (and every transform transition) sits inside prefers-reduced-motion: no-preference', () => {
   const offenders = [];
-  for (const f of fs.readdirSync(path.join(REPO, 'assets'))) {
+  for (const f of fs.readdirSync(path.join(REPO, 'assets')).filter((n) => n.endsWith('.css'))) {
     const t = read(`assets/${f}`).replace(/\/\*[\s\S]*?\*\//g, '');
     const stack = [];
     let cur = '';
@@ -235,7 +236,7 @@ test('reduced motion: every animation (and every transform transition) sits insi
 });
 
 test('reduced motion: every @keyframes is only reachable from a guarded rule', () => {
-  for (const f of fs.readdirSync(path.join(REPO, 'assets'))) {
+  for (const f of fs.readdirSync(path.join(REPO, 'assets')).filter((n) => n.endsWith('.css'))) {
     const t = read(`assets/${f}`);
     const names = [...t.matchAll(/@keyframes\s+([\w-]+)/g)].map((m) => m[1]);
     // the guarded block runs from the media query to the matching close brace
@@ -266,7 +267,7 @@ test('every object on the study has a hover/focus motion: each focusable object 
 
 test('every focusable thing has a visible focus style (global :focus-visible outline is not removed)', () => {
   assert.match(read('assets/site.css'), /:focus-visible\{outline:3px solid/);
-  for (const f of fs.readdirSync(path.join(REPO, 'assets'))) assert.ok(!/outline\s*:\s*(none|0)\b/.test(read(`assets/${f}`).replace(/:focus-visible\{outline:3px[^}]*\}/, '')), `${f}: removes outlines`);
+  for (const f of fs.readdirSync(path.join(REPO, 'assets')).filter((n) => n.endsWith('.css'))) assert.ok(!/outline\s*:\s*(none|0)\b/.test(read(`assets/${f}`).replace(/:focus-visible\{outline:3px[^}]*\}/, '')), `${f}: removes outlines`);
 });
 
 test('the books page review letters are keyboard-reachable (scrollable region has tabindex)', () => {

@@ -43,16 +43,17 @@
 .room .notebook i:last-child{border-radius:0 6px 6px 0;box-shadow:inset 8px 0 10px -6px rgba(0,0,0,.25);transform-origin:left center}
 .room .pen{position:absolute;left:300px;top:214px;width:70px;height:5px;border-radius:3px;background:linear-gradient(90deg,#222 0 12%,#3F7A7A 12%);transform:rotate(-8deg)}
 .room .desk .label{left:170px;top:44px}
-.room .painting{left:680px;top:60px;width:330px;height:262px}
+.room .painting{left:680px;top:60px;width:330px;height:290px}
 .room .painting .art{position:absolute;inset:0;transform-origin:50% 0}
 .room .wire{position:absolute;left:105px;top:0;width:120px;height:30px;border-top:0;background:linear-gradient(to top right,transparent calc(50% - 1px),#C9B27A 50%,transparent calc(50% + 1px)) left/50% 100% no-repeat,linear-gradient(to top left,transparent calc(50% - 1px),#C9B27A 50%,transparent calc(50% + 1px)) right/50% 100% no-repeat}
 .room .nail{position:absolute;left:160px;top:-3px;width:9px;height:9px;border-radius:50%;background:#C8C2B0}
-.room .canvas{position:absolute;left:0;top:30px;width:330px;height:232px;border:14px solid var(--brass);background:var(--paper);padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
-.room .scene{width:100%;height:100%;background:
-     radial-gradient(ellipse 40% 18% at 70% 30%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%),
-     radial-gradient(ellipse 60% 30% at 30% 82%,rgba(95,124,153,.9),rgba(95,124,153,0) 70%),
-     linear-gradient(176deg,#9FC6DF 0 38%,#E7D7AE 38% 48%,#9BA89C 48% 66%,#5F7C99 66% 100%)}
-.room .painting .label{left:96px;top:270px}
+.room .canvas{position:absolute;left:0;top:30px;width:330px;height:260px;border:14px solid var(--brass);background:var(--paper);padding:10px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+/* the painting: Fort Point Fog, 4:3, so the canvas inside the frame is 4:3 too (nothing cropped) */
+.room .scene{position:relative;width:100%;height:100%;overflow:hidden;background:#8d93a3}
+.room .scene img,.wall .painting .c img{display:block;width:100%;height:100%;object-fit:cover}
+/* a faint lamp-warm glow, strongest at the lower left nearest the lamp */
+.room .scene::after,.wall .painting .c div::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 75% at 12% 100%,rgba(245,206,122,.16),rgba(245,206,122,0) 70%)}
+.room .painting .label{left:96px;top:298px}
 .room .postcard{left:1052px;top:100px;width:130px;height:156px}
 .room .postcard .art{position:absolute;inset:0;transform:rotate(5deg);transform-origin:50% 8px}
 .room .polaroid{position:absolute;left:8px;top:12px;width:114px;height:138px;background:#FBF6EA;padding:9px 9px 30px;box-shadow:0 6px 12px rgba(0,0,0,.4)}
@@ -133,10 +134,10 @@
 .wall .tag{position:absolute;z-index:5;background:var(--paper);font:400 19px/1 var(--hand);padding:6px 11px 6px 19px;border-radius:4px 8px 8px 4px;box-shadow:0 3px 8px rgba(0,0,0,.35);white-space:nowrap}
 .wall .tag::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--wall)}
 .wall .obj:active{filter:brightness(1.15)}
-.wall .painting{left:30px;top:90px;width:250px;height:200px}
+.wall .painting{left:30px;top:90px;width:250px;height:219px}
 .wall .painting .c{position:absolute;inset:20px 0 0 0;border:11px solid var(--brass);background:var(--paper);padding:12px;box-shadow:0 8px 18px rgba(0,0,0,.45)}
-.wall .painting .c div{width:100%;height:100%;background:radial-gradient(ellipse 60% 30% at 30% 82%,rgba(95,124,153,.9),rgba(95,124,153,0) 70%),linear-gradient(176deg,#9FC6DF 0 38%,#E7D7AE 38% 48%,#9BA89C 48% 66%,#5F7C99 66% 100%)}
-.wall .painting .tag{left:14px;top:178px}
+.wall .painting .c div{position:relative;width:100%;height:100%;overflow:hidden;background:#8d93a3}
+.wall .painting .tag{left:14px;top:198px}
 .wall .postcard{left:268px;top:140px;width:96px;height:118px;transform:rotate(6deg)}
 .wall .postcard .p{position:absolute;inset:0;background:#FBF6EA;padding:7px 7px 24px;box-shadow:0 6px 12px rgba(0,0,0,.4)}
 .wall .postcard .p div{width:100%;height:100%;background:radial-gradient(circle at 30% 35%,#F2D58A 0 12%,transparent 13%),linear-gradient(#E8B48C 0 45%,#B7837A 45% 60%,#6F8A5B 60%)}

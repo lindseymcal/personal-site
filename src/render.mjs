@@ -105,7 +105,7 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
   <h1 class="sign">${name}</h1>
 
   <a class="obj painting" href="${esc(config.artSiteUrl)}" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
-    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
+    <div class="art"><i class="wire" aria-hidden="true"></i><i class="nail" aria-hidden="true"></i><div class="canvas"><div class="scene"><img src="assets/art/fort-point-fog.jpg" width="720" height="540" alt="Fort Point Fog, a watercolor by Lindsey: the Golden Gate Bridge under a fog bank" decoding="async"></div></div></div>
     <span class="label" aria-hidden="true">Art site</span>
   </a>
 
@@ -156,7 +156,7 @@ export function renderHome({ config, books, colorFor, projects, notebookTitle = 
 
   const phone = `<div class="wall-fit"><div class="wall">
   <h1 class="sign">${name}</h1>
-  <a class="obj painting" href="${esc(config.artSiteUrl)}" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener"><div class="c" aria-hidden="true"><div></div></div><span class="tag" aria-hidden="true">Art site</span></a>
+  <a class="obj painting" href="${esc(config.artSiteUrl)}" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener"><div class="c"><div><img src="assets/art/fort-point-fog.jpg" width="720" height="540" alt="Fort Point Fog, a watercolor by Lindsey: the Golden Gate Bridge under a fog bank" decoding="async"></div></div><span class="tag" aria-hidden="true">Art site</span></a>
   <a class="obj postcard" href="${esc(config.artInstagramUrl)}" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener"><div class="p" aria-hidden="true"><div></div></div><i class="tape" aria-hidden="true"></i><span class="tag" aria-hidden="true">art instagram</span></a>
 
   <a class="obj desk" href="writing.html" aria-label="Writing">
