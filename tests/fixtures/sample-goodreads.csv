@@ -1,0 +1,31 @@
+Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Average Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf,My Review,Spoiler,Private Notes,Read Count,Owned Copies
+9000001,Persuasion,Jane Austen,"Austen, Jane",,"=""0141439688""","=""9780141439686""",4,4.01,Sample Press,Paperback,249,2003,1817,2026/10/14,2026/09/01,read,read (#1),read,A quiet one about second chances.<br/><br/>The letter near the end is the best part.<br/>(Made-up sample review.),,PRIVATE-NOTE-SHOULD-NEVER-APPEAR,1,0
+9000002,Middlemarch,George Eliot,"Eliot, George",,"=""0141439548""","=""9780141439549""",5,4.01,Sample Press,Paperback,880,2003,1871,2026/11/02,2026/08/20,read,read (#1),read,"Sample review with a comma, a ""quoted bit"", and a line break
+right here in the middle of the field.",,PRIVATE-NOTE-SHOULD-NEVER-APPEAR,1,0
+9000003,Walden,Henry David Thoreau,"Thoreau, Henry David",,"=""0143039822""","=""9780143039822""",3,4.01,Sample Press,Paperback,352,2016,1854,2026/09/10,2026/09/01,read,read (#1),read,,,,1,0
+9000004,My Ántonia,Willa Cather,"Cather, Willa",,"=""0143039432""","=""9780143039433""",5,4.01,Sample Press,Paperback,256,2006,1918,2026/08/03,2026/07/01,read,read (#1),read,,,,1,0
+9000005,"Moby-Dick; or, The Whale (Penguin Classics)",Herman Melville,"Melville, Herman",,"=""0142437247""","=""9780142437247""",5,4.01,Sample Press,Paperback,720,2003,1851,,2026/03/05,read,read (#1),read,,,,1,0
+9000006,North and South,Elizabeth Gaskell,"Gaskell, Elizabeth",,"=""0140434240""","=""9780140434248""",0,4.01,Sample Press,Paperback,432,1995,1855,2026/07/15,2026/06/01,read,read (#1),read,Not rated yet. Tom &amp; Jerry style entity here: Fish &amp; chips.,,,1,0
+9000007,Frankenstein,Mary Shelley,"Shelley, Mary",,"=""0141439475""","=""9780141439471""",4,4.01,Sample Press,Paperback,260,2003,1818,2026/06/22,2026/06/01,read,read (#1),read,,,,1,0
+9000008,Jane Eyre,Charlotte Brontë,"Brontë, Charlotte",,"=""0141441143""","=""9780141441146""",4,4.01,Sample Press,Paperback,532,2006,1847,2026/05/30,2026/05/01,read,read (#1),read,"Sample: <i>italic tags</i> and a <script>alert(""x"")</script> attempt should show as plain text, never run.",,,1,0
+9000009,The Age of Innocence,Edith Wharton,"Wharton, Edith",,"=""0743273567""","=""9780743273565""",4,4.01,Sample Press,Paperback,362,2004,1920,2026/05/04,2026/04/01,read,read (#1),read,,,,1,0
+9000010,Silas Marner,George Eliot,"Eliot, George",,"=""0141439939""","=""9780141439938""",3,4.01,Sample Press,Paperback,208,2003,1861,2026/04/12,2026/03/01,read,read (#1),read,,,,1,0
+9000011,Emma,Jane Austen,"Austen, Jane",,"=""0141439580""","=""9780141439587""",4,4.01,Sample Press,Paperback,474,2003,1815,2026/03/28,2026/03/01,read,read (#1),read,,,,1,0
+9000012,Bleak House,Charles Dickens,"Dickens, Charles",,"=""0141439726""","=""9780141439723""",4,4.01,Sample Press,Paperback,1017,2003,1853,2026/02/20,2026/01/05,read,read (#1),read,,,,1,0
+9000013,The Awakening,Kate Chopin,"Chopin, Kate",,"=""0486277860""","=""9780486277868""",3,4.01,Sample Press,Paperback,128,1993,1899,2026/02/01,2026/01/05,read,read (#1),read,,,,1,0
+9000014,Cranford (Penguin Classics),Elizabeth Gaskell,"Gaskell, Elizabeth",,"=""""","=""""",3,4.01,Sample Press,Paperback,,2005,1853,2026/01/18,2026/01/02,read,read (#1),read,,,,1,0
+9000015,Mrs Dalloway,Virginia Woolf,"Woolf, Virginia",,"=""0156628708""","=""9780156628709""",3,4.01,Sample Press,Paperback,194,2005,1925,2025/12/10,2025/11/20,read,read (#1),read,,,,1,0
+9000016,The Souls of Black Folk,W. E. B. Du Bois,"Du Bois, W. E. B.",,"=""0486280411""","=""9780486280417""",4,4.01,Sample Press,Paperback,176,1994,1903,2025/11/22,2025/11/01,read,read (#1),read,A sample review for the library-card-versus-letter test.,,,1,0
+9000017,Little Women,Louisa May Alcott,"Alcott, Louisa May",,"=""0147514010""","=""9780147514011""",4,4.01,Sample Press,Paperback,449,2014,1868,2025/10/05,2025/09/01,read,read (#1),read,,,,1,0
+9000018,Wuthering Heights,Emily Brontë,"Brontë, Emily",,"=""0141439556""","=""9780141439556""",4,4.01,Sample Press,Paperback,416,2003,1847,2025/09/14,2025/08/01,read,read (#1),read,,,,1,0
+9000019,Great Expectations,Charles Dickens,"Dickens, Charles",,"=""0141439564""","=""9780141439563""",5,4.01,Sample Press,Paperback,544,2003,1861,2025/08/30,2025/08/01,read,read (#1),read,,,,1,0
+9000020,The Moonstone,Wilkie Collins,"Collins, Wilkie",,"=""0140435638""","=""9780140435634""",3,4.01,Sample Press,Paperback,528,1998,1868,2025/07/21,2025/07/01,read,read (#1),read,,,,1,0
+9000021,Anna Karenina,Leo Tolstoy,"Tolstoy, Leo",,"=""0143035002""","=""9780143035008""",5,4.01,Sample Press,Paperback,838,2004,1877,2025/06/30,2025/05/01,read,read (#1),read,"Long, and worth it. (Sample.)",,,1,0
+9000022,The House of Mirth,Edith Wharton,"Wharton, Edith",,"=""0141441135""","=""9780141441139""",4,4.01,Sample Press,Paperback,350,2012,1905,2025/05/12,2025/05/01,read,read (#1),read,,,,1,0
+9000023,Villette,Charlotte Brontë,"Brontë, Charlotte",,"=""0140434801""","=""9780140434804""",3,4.01,Sample Press,Paperback,560,1985,1853,2025/04/04,2025/03/01,read,read (#1),read,,,,1,0
+9000024,Dracula,Bram Stoker,"Stoker, Bram",,"=""0141439840""","=""9780141439846""",4,4.01,Sample Press,Paperback,418,2003,1897,2025/03/01,2025/02/01,read,read (#1),read,,,,1,0
+9000025,Howards End,E. M. Forster,"Forster, E. M.",,"=""0141441208""","=""9780141441207""",4,4.01,Sample Press,Paperback,320,2012,1910,2025/02/10,2025/01/05,read,read (#1),read,,,,1,0
+9000026,Sense and Sensibility,Jane Austen,"Austen, Jane",,"=""0141439661""","=""9780141439662""",4,4.01,Sample Press,Paperback,409,2003,1811,2025/01/20,2025/01/02,read,read (#1),read,,,,1,0
+9000027,The Odyssey,Homer,"Homer, ",,"=""0140268863""","=""9780140268867""",4,4.01,Sample Press,Paperback,541,1997,,2025/01/05,2024/12/20,read,read (#1),read,,,,1,0
+9000028,Pride and Prejudice,Jane Austen,"Austen, Jane",,"=""0141439513""","=""9780141439518""",0,4.01,Sample Press,Paperback,,2002,1813,,2026/10/20,to-read,to-read (#1),to-read,,,,0,0
+9000029,The Scarlet Letter,Nathaniel Hawthorne,"Hawthorne, Nathaniel",,"=""0142437263""","=""9780142437261""",0,4.01,Sample Press,Paperback,238,2003,1850,,2026/10/21,currently-reading,currently-reading (#1),currently-reading,,,,0,0
