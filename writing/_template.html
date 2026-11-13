@@ -1,0 +1,44 @@
+<!doctype html>
+<!--
+  HOW TO ADD AN ESSAY
+  1. Copy this file to writing/your-essay-name.html (lowercase, dashes, no spaces).
+  2. Fill in the four <meta> lines below (title, date as YYYY-MM-DD, a one-line summary, the Substack link).
+  3. Replace the heading, date line and paragraphs. Files whose names start with _ are ignored by the build.
+  4. Run:  node scripts/build.mjs  (it rebuilds the notebook page; the CSV argument is explained in the README)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="essay-title" content="Your essay title">
+<meta name="essay-date" content="2026-01-01">
+<meta name="essay-summary" content="One line that says what it is about.">
+<meta name="essay-substack" content="https://your-name.substack.com/p/your-essay-name">
+<title>Your essay title</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="../assets/essay.css">
+</head>
+<body class="p-essay">
+<nav class="way" aria-label="Way back">
+  <a class="home" href="../index.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>
+  <a class="nb" href="../writing.html" aria-label="All writing"></a>
+</nav>
+<main>
+  <article class="sheet">
+    <h1>Your essay title</h1>
+    <p class="when">January 1, 2026</p>
+    <p class="lede">Open with a sentence or two that draws the reader in.</p>
+    <p>A normal paragraph.</p>
+    <h2>A heading, if you need one</h2>
+    <p>Another paragraph.</p>
+    <blockquote>A line worth pulling out.</blockquote>
+    <footer class="end">
+      <a href="https://your-name.substack.com/p/your-essay-name" target="_blank" rel="noopener"><i class="env" aria-hidden="true"></i><span>Get the next one by email, on Substack<span class="sr"> (opens in a new tab)</span></span></a>
+    </footer>
+  </article>
+</main>
+</body>
+</html>

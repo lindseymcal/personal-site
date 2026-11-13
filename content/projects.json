@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "agent-fleet",
+    "title": "Agent fleet",
+    "tagline": "AI helpers that build, test and review code",
+    "what": "A small team of AI helpers that plan, build, test and review code together, kept in line by guardrail hooks, with a cozy pet room that shows who is doing what.",
+    "role": "[Add your role]",
+    "when": "[Add dates]",
+    "builtWith": "Node, Slack, agent hooks",
+    "status": "[Add status]",
+    "links": [{ "label": "Source code", "url": "https://example.com/agent-fleet" }],
+    "problem": "[Placeholder] Describe the problem this project set out to solve, in two or three sentences.",
+    "built": ["[Placeholder] One thing you made", "[Placeholder] Another thing you made", "[Placeholder] A third thing"],
+    "learned": "[Placeholder] What you would tell a colleague you learned from it."
+  },
+  {
+    "slug": "painting-app",
+    "title": "Painting app",
+    "tagline": "Color and value finder for painting outdoors",
+    "what": "A phone app for building painting intuition: point the camera or choose a photo, and it pulls out the lightest and darkest colors, with an eyedropper and Color, Gray and 3-value views.",
+    "role": "[Add your role]",
+    "when": "[Add dates]",
+    "builtWith": "HTML, CSS, JavaScript",
+    "status": "[Add status]",
+    "links": [{ "label": "See it working", "url": "https://example.com/painting-app" }],
+    "problem": "[Placeholder] Describe the problem this project set out to solve, in two or three sentences.",
+    "built": ["[Placeholder] One thing you made", "[Placeholder] Another thing you made"],
+    "learned": "[Placeholder] What you would tell a colleague you learned from it."
+  },
+  {
+    "slug": "lorem-kit",
+    "title": "Lorem kit",
+    "tagline": "Lorem ipsum dolor sit amet",
+    "what": "[Placeholder project] Replace this entry in content/projects.json with a real project, or delete it.",
+    "role": "[Add your role]",
+    "when": "[Add dates]",
+    "builtWith": "[Add tools]",
+    "status": "[Add status]",
+    "links": [],
+    "problem": "[Placeholder] Describe the problem.",
+    "built": ["[Placeholder] One thing you made"],
+    "learned": "[Placeholder] What you learned."
+  },
+  {
+    "slug": "ipsum-tool",
+    "title": "Ipsum tool",
+    "tagline": "Consectetur adipiscing elit",
+    "what": "[Placeholder project] Replace this entry in content/projects.json with a real project, or delete it.",
+    "role": "[Add your role]",
+    "when": "[Add dates]",
+    "builtWith": "[Add tools]",
+    "status": "[Add status]",
+    "links": [],
+    "problem": "[Placeholder] Describe the problem.",
+    "built": ["[Placeholder] One thing you made"],
+    "learned": "[Placeholder] What you learned."
+  }
+]
