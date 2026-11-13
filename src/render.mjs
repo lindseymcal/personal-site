@@ -301,7 +301,7 @@ function tocHtml(groups) {
   return groups.map((g) => `<div class="page-in">
         <h2 class="year">${g.year}</h2>
         <ul class="toc">
-${g.essays.map((e) => `          <li><a href="writing/${esc(e.slug)}.html">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTH_NAMES[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
+${g.essays.map((e) => `          <li><a href="writing/${esc(encodeURIComponent(e.slug))}.html">${esc(e.title)}</a><div class="meta"><span>${esc(e.summary)}</span><time datetime="${esc(e.date)}">${MONTH_NAMES[e.month - 1]} ${e.day}</time></div></li>`).join('\n')}
         </ul>
       </div>`).join('\n      ');
 }

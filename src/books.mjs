@@ -173,7 +173,7 @@ export function rowsToBooks(rows) {
 // --- Zee's own file: content/books-extra.json -------------------------------------------------
 
 export function isHexColor(value) {
-  return /^#[0-9a-fA-F]{6}$/.test(String(value ?? ''));
+  return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
 }
 
 // extras is { "<Goodreads Book Id>": { favorite, recommendedBy, color } }. Keys starting with "_" are notes.

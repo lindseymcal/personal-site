@@ -12,7 +12,7 @@ export function safeUrl(value, fallback = '#') {
 // A local file path such as resume.pdf: no scheme, no "..", no leading slash.
 export function safeLocalPath(value, fallback = 'resume.pdf') {
   const s = String(value ?? '').trim();
-  if (!s || /^[a-z][a-z0-9+.-]*:/i.test(s) || s.startsWith('/') || s.includes('..') || /[\s"'<>]/.test(s)) return fallback;
+  if (!s || /^[a-z][a-z0-9+.-]*:/i.test(s) || s.startsWith('/') || s.includes('..') || s.includes('\\') || /[\s"'<>]/.test(s)) return fallback;
   return s;
 }
 
@@ -25,9 +25,10 @@ export const DEFAULT_CONFIG = {
   resumePath: 'resume.pdf',
 };
 
-export function normalizeConfig(raw = {}) {
+export function normalizeConfig(input = {}) {
+  const raw = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
   const c = { ...DEFAULT_CONFIG };
-  const name = String(raw.name ?? '').trim();
+  const name = typeof raw.name === 'string' ? raw.name.trim() : '';
   c.name = name ? name.slice(0, 80) : DEFAULT_CONFIG.name;
   for (const key of ['artSiteUrl', 'artInstagramUrl', 'linkedinUrl', 'substackUrl']) {
     c[key] = safeUrl(raw[key], DEFAULT_CONFIG[key]);
@@ -104,7 +105,7 @@ export function parseEssay(html, fileName) {
   const date = (meta['essay-date'] ?? '').trim();
   const m = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!title) return { error: `${fileName}: add <meta name="essay-title" content="...">` };
-  if (!m) return { error: `${fileName}: essay-date must look like 2026-10-30` };
+  if (!m || Number(m[2]) < 1 || Number(m[2]) > 12 || Number(m[3]) < 1 || Number(m[3]) > 31) return { error: `${fileName}: essay-date must be a real date like 2026-10-30` };
   return {
     slug: fileName.replace(/\.html$/, ''),
     title,

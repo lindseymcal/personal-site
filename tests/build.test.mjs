@@ -200,3 +200,21 @@ test('bookDomId keeps ids safe for HTML and CSS', () => {
   assert.equal(bookDomId('a"b c<d>'), 'abcd');
   assert.equal(bookDomId('!!!'), 'x');
 });
+
+test('warns when the CSV is missing key columns (wrong file)', () => {
+  const w = buildPages({ csvText: 'Name,Email\na,b\n', projectsRaw }).warnings.join('\n');
+  assert.match(w, /Exclusive Shelf/);
+  assert.match(w, /Book Id/);
+  assert.equal(build().warnings.some((x) => x.includes('column')), false);
+});
+
+test('a malformed cached color falls back to the title color with a warning', () => {
+  const r = build({ colors: { 9780141439549: 'not-a-color', 9780141439686: ['#112233'] } });
+  assert.ok(r.warnings.some((x) => x.includes('9780141439549')));
+  assert.match(r.pages['books.html'], /id="s-9000002"[^>]*--c:#[0-9a-f]{6}/);
+});
+
+test('essay file names are URL-encoded in links', () => {
+  const html = build({ essays: [{ ...essay('T', '2026-10-30'), slug: 'my essay#1' }] }).pages['writing.html'];
+  assert.ok(html.includes('href="writing/my%20essay%231.html"'));
+});

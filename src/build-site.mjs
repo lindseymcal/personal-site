@@ -1,15 +1,28 @@
 // Everything the build does except touching the disk or the network: inputs in, a map of
 // "file path -> page text" out. scripts/build.mjs reads the files and writes this result.
-import { csvToObjects } from './csv.mjs';
+import { csvToObjects, parseCsv } from './csv.mjs';
+import { isHexColor } from './books.mjs';
 import { rowsToBooks, mergeExtra, groupByYear, unmatchedExtraIds } from './books.mjs';
 import { normalizeConfig, normalizeProjects, groupEssaysByYear, splitYearsAcrossPages } from './site.mjs';
 import { renderHome, renderBooks, renderWriting, renderProjects, renderProject } from './render.mjs';
 
 export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, projectsRaw = [], essays = [] }) {
+  const warnings = [];
+  const header = parseCsv(csvText)[0] ?? [];
+  for (const col of ['Exclusive Shelf', 'Book Id']) {
+    if (!header.map((h) => h.trim()).includes(col)) warnings.push(`the CSV has no "${col}" column: is this really a Goodreads library export?`);
+  }
   const config = normalizeConfig(configRaw);
   const projects = normalizeProjects(projectsRaw);
   const books = rowsToBooks(csvToObjects(csvText)).map((b) => mergeExtra(b, extras));
-  const colorFor = (b) => (b.isbn && typeof colors[b.isbn] === 'string' ? colors[b.isbn] : undefined);
+  const badColors = new Set();
+  const colorFor = (b) => {
+    const c = b.isbn ? colors[b.isbn] : undefined;
+    if (c == null) return undefined;
+    if (isHexColor(c)) return c;
+    badColors.add(b.isbn);
+    return undefined;
+  };
   const essayGroups = groupEssaysByYear(essays);
   const newest = essayGroups[0]?.essays[0];
 
@@ -21,5 +34,7 @@ export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, 
   };
   for (const project of projects) pages[`projects/${project.slug}.html`] = renderProject({ config, project });
 
-  return { pages, books, warnings: unmatchedExtraIds(books, extras).map((id) => `books-extra.json has "${id}" but no book on your read shelf has that Book Id`) };
+  for (const isbn of badColors) warnings.push(`content/spine-colors.json has a bad color for ISBN ${isbn}; using a color from the title instead`);
+  warnings.push(...unmatchedExtraIds(books, extras).map((id) => `books-extra.json has "${id}" but no book on your read shelf has that Book Id`));
+  return { pages, books, warnings };
 }
