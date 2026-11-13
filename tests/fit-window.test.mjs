@@ -10,8 +10,32 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildPages } from '../src/build-site.mjs';
+import { parseEssay } from '../src/site.mjs';
 
-const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const REAL_REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// These tests open the site in Chrome. They must not depend on whatever is in the working tree: once Zee
+// builds her real 827-book shelf there, pages are huge and slow. So build the fake-sample site into a temp
+// folder (pages from the fixture, plus the real assets and essays) and point Chrome at that.
+const REPO = fs.mkdtempSync(path.join(os.tmpdir(), 'fit-site-'));
+{
+  const read = (rel) => fs.readFileSync(path.join(REAL_REPO, rel), 'utf8');
+  const essays = fs.readdirSync(path.join(REAL_REPO, 'writing')).filter((f) => f.endsWith('.html') && !f.startsWith('_')).map((f) => parseEssay(read(`writing/${f}`), f));
+  const { pages } = buildPages({
+    csvText: read('tests/fixtures/sample-goodreads.csv'),
+    extras: JSON.parse(read('content/books-extra.json')),
+    colors: JSON.parse(read('tests/fixtures/sample-spine-colors.json')),
+    configRaw: JSON.parse(read('site.config.json')),
+    projectsRaw: JSON.parse(read('content/projects.json')),
+    essays,
+  });
+  fs.mkdirSync(path.join(REPO, 'projects'));
+  for (const [rel, html] of Object.entries(pages)) fs.writeFileSync(path.join(REPO, rel), html);
+  fs.cpSync(path.join(REAL_REPO, 'assets'), path.join(REPO, 'assets'), { recursive: true });
+  fs.cpSync(path.join(REAL_REPO, 'writing'), path.join(REPO, 'writing'), { recursive: true });
+}
+after(() => fs.rmSync(REPO, { recursive: true, force: true }));
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const HAVE_CHROME = fs.existsSync(CHROME);
 const opts = { skip: HAVE_CHROME ? false : 'Google Chrome is not installed', timeout: 90_000 };

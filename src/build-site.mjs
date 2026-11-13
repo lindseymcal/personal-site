@@ -5,7 +5,14 @@ import { rowsToBooks, mergeExtra, groupByYear, unmatchedExtraIds, applyReviewPol
 import { normalizeConfig, normalizeProjects, groupEssaysByYear, splitYearsAcrossPages } from './site.mjs';
 import { renderHome, renderBooks, renderWriting, renderProjects, renderProject } from './render.mjs';
 
-export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, projectsRaw = [], essays = [] }) {
+// Cover stats come from a cache file, so check their shape before trusting them in a style attribute.
+export function validCoverStats(s) {
+  const hex = (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+  return s && typeof s === 'object' && hex(s.main) && hex(s.dark) && hex(s.light) && typeof s.busy === 'boolean';
+}
+
+// covers (optional, the --covers preview only): { <isbn>: { main, dark, light, busy } } for books whose picture is available.
+export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, projectsRaw = [], essays = [], covers = {} }) {
   const warnings = [];
   const header = parseCsv(csvText)[0] ?? [];
   for (const col of ['Exclusive Shelf', 'Book Id']) {
@@ -30,7 +37,7 @@ export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, 
 
   const pages = {
     'index.html': renderHome({ config, books, colorFor, projects, notebookTitle: newest?.title ?? '' }),
-    'books.html': renderBooks({ config, groups: groupByYear(books), colorFor }),
+    'books.html': renderBooks({ config, groups: groupByYear(books), colorFor, coverStatsFor: (b) => (b.isbn && Object.hasOwn(covers, b.isbn) && validCoverStats(covers[b.isbn]) ? covers[b.isbn] : undefined) }),
     'writing.html': renderWriting({ config, groups: essayGroups, splitPages: splitYearsAcrossPages }),
     'projects.html': renderProjects({ config, projects }),
   };

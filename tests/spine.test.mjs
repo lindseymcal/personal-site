@@ -13,9 +13,16 @@ test('hashText is stable and spreads values', () => {
 
 test('spine width grows with pages and stays in range', () => {
   assert.ok(spineWidth(900) > spineWidth(200));
-  assert.equal(spineWidth(0), 40);
-  assert.equal(spineWidth(10), 28);
-  assert.equal(spineWidth(5000), 76);
+  assert.equal(spineWidth(0), 44);
+  assert.equal(spineWidth(10), 26);
+  assert.equal(spineWidth(5000), 96);
+  // clearly proportional: an 800-page book is about three times as thick as a 100-page one
+  assert.ok(spineWidth(800) >= 2.5 * spineWidth(100), `${spineWidth(800)} vs ${spineWidth(100)}`);
+  assert.ok(spineWidth(100) <= 34 && spineWidth(800) >= 85);
+  // linear between the clamps (about 0.085 px per page)
+  assert.ok(Math.abs((spineWidth(600) - spineWidth(300)) - 25.5) <= 1);
+  let prev = 0;
+  for (let p = 1; p <= 1500; p += 10) { const w = spineWidth(p); assert.ok(w >= prev, `monotonic at ${p}`); prev = w; } // (0 pages means unknown, so it is skipped)
 });
 
 test('spine height is within the shelf and stable', () => {
@@ -90,7 +97,8 @@ test('tuneCoverColor softens extremes only', () => {
 
 test('home shelf spine sizes', () => {
   assert.equal(homeSpineWidth(0), 22);
-  assert.ok(homeSpineWidth(900) <= 30 && homeSpineWidth(30) >= 16);
+  assert.ok(homeSpineWidth(900) <= 34 && homeSpineWidth(30) >= 13);
+  assert.ok(homeSpineWidth(800) > homeSpineWidth(100) + 10);
   const h = homeSpineHeight('Emma');
   assert.ok(h >= 86 && h <= 112);
   assert.ok(coverFontSize('Emma') > coverFontSize('The Autobiography of Benjamin Franklin'));

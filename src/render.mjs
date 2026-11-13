@@ -2,7 +2,7 @@
 // ALL text that came from a CSV, a JSON file or an essay is passed through escapeHtml before it is written.
 import { escapeHtml as esc, reviewToHtml, selectHomeShelf, MONTHS } from './books.mjs';
 import { packIntoRows, packNewestChronologically } from './layout.mjs';
-import { spineStyle, homeSpineWidth, homeSpineHeight, coverFontSize } from './spine.mjs';
+import { spineStyle, homeSpineWidth, homeSpineHeight, coverFontSize, coverSpineLayout } from './spine.mjs';
 import { substackSubscribeUrl } from './site.mjs';
 
 const FONTS_BASE = 'family=Andika:wght@400;700&family=Patrick+Hand';
@@ -212,6 +212,20 @@ function dotsHtml(rating) {
   return `<span class="dots" role="img" aria-label="${rating} out of 5">${dots}</span>`;
 }
 
+// The picture file for a book in the --covers preview: always a local relative path (ISBN digits only).
+export function coverSrc(book) {
+  return `covers/${book.isbn}.jpg`;
+}
+
+// A spine cut from the real cover: a strip of the picture, with the title on a solid label (designer's rules).
+function coverSpineHtml(book, st, stats, { lean = false } = {}) {
+  const id = bookDomId(book.id);
+  const lay = coverSpineLayout(book, st, stats);
+  const label = `${book.title}, ${book.author}${book.favorite ? ', a favorite' : ''}`;
+  const vars = `--w:${st.width}px;--h:${st.height}px;--f:'${st.family}';--fs:${lay.fontSize}px;--lbl:${lay.bg};--lt:${lay.text}${st.caps ? ';--tt:uppercase' : ''}`;
+  return `<a class="spine cv${book.favorite ? ' is-fav' : ''}${lean ? ' lean' : ''}" id="s-${id}" href="#b-${id}" aria-label="${esc(label)}" title="${esc(`${book.title}, ${book.author}`)}" style="${vars}"><img class="cut" src="${coverSrc(book)}" alt="" loading="lazy" decoding="async">${book.favorite ? '<i class="foil" aria-hidden="true"></i>' : ''}<span class="panel${lay.kind === 'paper' ? ' paper' : ''}"><span class="t">${lay.lines.map((l) => `<span>${esc(l)}</span>`).join('')}</span>${lay.showAuthor ? `<span class="a">${esc(book.spineAuthor)}</span>` : ''}</span></a>`;
+}
+
 function spineHtml(book, st, { lean = false } = {}) {
   const id = bookDomId(book.id);
   const label = `${book.title}, ${book.author}${book.favorite ? ', a favorite' : ''}`;
@@ -219,7 +233,7 @@ function spineHtml(book, st, { lean = false } = {}) {
   return `<a class="spine${book.favorite ? ' is-fav' : ''}${lean ? ' lean' : ''}" id="s-${id}" href="#b-${id}" aria-label="${esc(label)}" title="${esc(`${book.title}, ${book.author}`)}" style="${vars}">${book.favorite ? '<i class="foil" aria-hidden="true"></i>' : ''}<span class="t">${st.lines.map((l) => `<span>${esc(l)}</span>`).join('')}</span>${st.authorVertical ? `<span class="a v" style="--ah:${st.authorHeight}px"><span>${esc(book.spineAuthor)}</span></span>` : `<span class="a">${esc(book.spineAuthor)}</span>`}</a>`;
 }
 
-function pulledBookHtml(book, st) {
+function pulledBookHtml(book, st, hasCover = false) {
   const id = bookDomId(book.id);
   const reviewHtml = reviewToHtml(book.review);
   const hasReview = reviewHtml !== '';
@@ -231,7 +245,9 @@ function pulledBookHtml(book, st) {
   const heading = `<h2>${esc(book.title)}${fav ? '<i class="foil big" role="img" aria-label="A favorite"></i>' : ''}</h2>`;
   const by = `<p class="by">${esc(book.author)}</p>`;
   const slip = book.recommendedBy ? `<div class="slip"><i>recommended by ${esc(book.recommendedBy)}</i></div>` : '';
-  const cover = `<div class="book" style="background:${st.bg};color:${st.text};font-family:'${st.family}'"><i class="frame"></i>${fav ? '<i class="foil" aria-hidden="true"></i>' : ''}<b style="${fav ? 'margin-top:34px;' : ''}font-size:${coverFontSize(book.title)}px${st.caps ? ';text-transform:uppercase' : ''}">${esc(book.spineTitle)}</b><span>${esc(book.author)}</span></div>`;
+  const cover = hasCover
+    ? `<div class="book has-cover"><img class="front" src="${coverSrc(book)}" alt="${esc(`Cover of ${book.title}`)}" loading="lazy" decoding="async">${fav ? '<i class="foil" aria-hidden="true"></i>' : ''}</div>`
+    : `<div class="book" style="background:${st.bg};color:${st.text};font-family:'${st.family}'"><i class="frame"></i>${fav ? '<i class="foil" aria-hidden="true"></i>' : ''}<b style="${fav ? 'margin-top:34px;' : ''}font-size:${coverFontSize(book.title)}px${st.caps ? ';text-transform:uppercase' : ''}">${esc(book.spineTitle)}</b><span>${esc(book.author)}</span></div>`;
   const article = hasReview
     ? `<article class="letter" tabindex="0">\n      ${heading}\n      ${by}\n      ${row}\n      ${reviewHtml}\n    </article>`
     : `<article class="card">\n      ${heading}\n      ${by}\n      ${row}\n    </article>`;
@@ -261,7 +277,7 @@ export function planShelf(groups, styleFor) {
   return rows;
 }
 
-export function renderBooks({ config, groups, colorFor }) {
+export function renderBooks({ config, groups, colorFor, coverStatsFor = () => undefined }) {
   const rows = planShelf(groups, (b) => spineStyle(b, colorFor(b)));
   const rowCount = Math.max(2, rows.length);
   const caseHeight = rowCount * ROW_HEIGHT + 44;
@@ -271,7 +287,11 @@ export function renderBooks({ config, groups, colorFor }) {
     const leftover = ROW_CAPACITY - row.used;
     const lastIdx = row.items.length - 1;
     const roomForLean = r === 0 && leftover >= 130 && row.items.length > 1;
-    const spines = row.items.map((it, k) => spineHtml(it.book, it.st, { lean: roomForLean && k === lastIdx })).join('\n        ');
+    const spines = row.items.map((it, k) => {
+      const stats = coverStatsFor(it.book);
+      const opts = { lean: roomForLean && k === lastIdx };
+      return stats ? coverSpineHtml(it.book, it.st, stats, opts) : spineHtml(it.book, it.st, opts);
+    }).join('\n        ');
     const decor = r === 0 && leftover >= 130 ? '<span class="plant" aria-hidden="true"></span>' : '<span class="bookend" aria-hidden="true"></span>';
     return `      <div class="tier" role="group" aria-label="${row.first ? `Read in ${esc(row.label)}` : `Read in ${esc(row.label)}, continued`}">
         ${spines}
@@ -282,7 +302,7 @@ export function renderBooks({ config, groups, colorFor }) {
   while (tiers.length < 2) tiers.push('      <div class="tier"><span class="bookend" aria-hidden="true"></span></div>');
 
   const allBooks = groups.flatMap((g) => g.books);
-  const pulls = allBooks.map((b) => pulledBookHtml(b, spineStyle(b, colorFor(b)))).join('\n\n');
+  const pulls = allBooks.map((b) => pulledBookHtml(b, spineStyle(b, colorFor(b)), Boolean(coverStatsFor(b)))).join('\n\n');
   const gapSelectors = allBooks.map((b) => `.stage:has(#b-${bookDomId(b.id)}:target) #s-${bookDomId(b.id)}`);
   const gapStyle = gapSelectors.length
     ? `<style>\n${gapSelectors.join(',\n')}{background:transparent!important;background-image:none!important;box-shadow:inset 0 0 0 2px rgba(245,206,122,.55),inset 0 0 22px rgba(245,206,122,.25)}\n${gapSelectors.map((s) => `${s} > *`).join(',\n')}{visibility:hidden}\n</style>`

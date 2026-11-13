@@ -27,7 +27,7 @@ function fits(r, { width, height, family, caps, favorite, authorHeight }) {
 }
 
 test('every extreme title, on every typeface, spine width and height, fits inside its spine', () => {
-  for (const title of TITLES) for (const [family, caps] of FACES) for (const width of [28, 32, 40, 52, 76]) for (const height of [226, 262, 298]) for (const favorite of [false, true]) for (const authorHeight of [19, 45, 80]) {
+  for (const title of TITLES) for (const [family, caps] of FACES) for (const width of [26, 28, 32, 40, 52, 76, 96]) for (const height of [226, 262, 298]) for (const favorite of [false, true]) for (const authorHeight of [19, 45, 80]) {
     const o = { width, height, family, caps, favorite, authorHeight };
     const r = fitSpineTitle(title, o);
     assert.ok(r.lines.length >= 1, title);

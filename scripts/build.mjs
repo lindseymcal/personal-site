@@ -8,7 +8,8 @@
 //   npm run build:sample    a PREVIEW of the whole site from the fake sample books, written to the
 //                           git-ignored preview/ folder. Touches nothing else. For code and design work.
 //   node scripts/build.mjs <file.csv> [--cache <file>] [--cache-seed <file>] [--out <folder>]
-//                          [--offline] [--refresh-colors] [--allow-empty] [--prune]
+//                          [--offline] [--refresh-colors] [--allow-empty] [--prune] [--covers]
+//   npm run preview:covers   EXPERIMENT: your real books with real cover pictures, into preview/ only (see --covers)
 //
 // Reads:  the CSV, site.config.json, content/books-extra.json, content/projects.json, writing/*.html
 // Writes: index.html, books.html, writing.html, projects.html, projects/<name>.html and the Substack
@@ -20,6 +21,10 @@
 //     seeded from tests/fixtures/sample-spine-colors.json with --cache-seed)
 //   - it is pruned to the books in this build; if that would drop more than half of it, the build stops
 //     unless you pass --prune.
+// --covers (opt-in, preview only): downloads each book's Open Library cover (medium size) into a folder OUTSIDE
+// the repo, ~/.agent-fleet/goodreads/covers/ (dir 0700, files 0600), and draws spines cut from the covers.
+// It only works together with --out preview: the pictures are copied into the git-ignored preview/ folder,
+// never into the real site, because republishing cover images is Zee's decision.
 // Safety stops (nothing is written): the CSV lacks the Goodreads columns or holds 0 read books
 // (wrong file?) unless --allow-empty.
 // The only network use: Open Library cover colors for ISBNs not already cached. --offline skips that.
@@ -32,7 +37,9 @@ import { csvToObjects, parseCsv } from '../src/csv.mjs';
 import { rowsToBooks } from '../src/books.mjs';
 import { parseEssay, applyEssayFooter } from '../src/site.mjs';
 import { essayFooterLink } from '../src/render.mjs';
-import { fillColorCache, sipsAvailable } from '../src/cover.mjs';
+import { fillColorCache, sipsAvailable, fillCoverFolder, jpegToBmp } from '../src/cover.mjs';
+import { parseBmp } from '../src/bmp.mjs';
+import { coverStats } from '../src/coverstats.mjs';
 
 const ROOT = fs.realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const DEFAULT_CSV = path.join(os.homedir(), '.agent-fleet', 'goodreads', 'goodreads_library_export.csv');
@@ -108,6 +115,9 @@ async function main() {
   if (!csvArg) {
     throw new Error('Tell me which CSV to build from (this is on purpose, so your real export is never read by accident):\n  npm run build          your real Goodreads export: rewrites the real pages\n  npm run build:sample   a preview from the fake sample books, written to preview/');
   }
+  if (flags.has('--covers') && !values['--out']) {
+    throw new Error('--covers only works together with --out preview (cover pictures are never put in the real site). Try: npm run preview:covers. Nothing was changed.');
+  }
   const csvPath = realish(csvArg);
   // Exports hold private notes, so they may not sit inside the repo (only the fake sample may).
   const insideRepo = (() => { const r = path.relative(ROOT, csvPath); return r === '' || (!r.startsWith('..') && !path.isAbsolute(r)); })();
@@ -175,6 +185,24 @@ async function main() {
     throw new Error(`This build would forget ${dropped} of the ${Object.keys(cache).length} cached cover colors (a different or damaged CSV?). Nothing was changed. Pass --prune if that is what you want (with npm: npm run build -- --prune).`);
   }
 
+  // Cover pictures (preview only). Downloads go to the private folder outside the repo.
+  let covers = {};
+  let coverFiles = [];
+  if (flags.has('--covers')) {
+    const coversDir = path.join(os.homedir(), '.agent-fleet', 'goodreads', 'covers');
+    const canAnalyze = sipsAvailable();
+    if (!canAnalyze) console.warn('Note: "sips" was not found, so covers cannot be read; spines stay generated.');
+    const got = await fillCoverFolder(books.map((b) => b.isbn), coversDir, {
+      offline: flags.has('--offline'),
+      analyze: canAnalyze ? (bytes) => coverStats(parseBmp(jpegToBmp(bytes))) : undefined,
+      log: (m) => console.warn(m),
+    });
+    covers = Object.fromEntries(got.have);
+    coverFiles = [...got.have.keys()].map((isbn) => ({ isbn, from: path.join(coversDir, `${isbn}.jpg`) }));
+    const mb = (n) => (n / 1048576).toFixed(1);
+    console.log(`Covers: ${got.found} found, ${got.none} have no cover on Open Library, ${got.failed} failed. Downloaded ${mb(got.newBytes)} MB this time; ${mb(got.totalBytes)} MB in the cache (${coversDir}).`);
+  }
+
   // ---- from here on we write (everything above only reads) ----
   const { essays, problems } = readEssays(outDir);
   const { pages, warnings } = buildPages({
@@ -184,7 +212,17 @@ async function main() {
     configRaw: readJson('site.config.json', {}),
     projectsRaw: readJson('content/projects.json', []),
     essays,
+    covers,
   });
+
+  // Cover pictures go only into the preview folder (and are removed from it when --covers is not used).
+  if (outDir !== ROOT) {
+    fs.rmSync(path.join(outDir, 'covers'), { recursive: true, force: true });
+    if (coverFiles.length) {
+      fs.mkdirSync(path.join(outDir, 'covers'), { recursive: true });
+      for (const f of coverFiles) fs.copyFileSync(f.from, path.join(outDir, 'covers', `${f.isbn}.jpg`));
+    }
+  }
 
   fs.mkdirSync(path.dirname(cachePath), { recursive: true });
   fs.writeFileSync(cachePath, JSON.stringify(pruned, null, 2) + '\n', { mode: 0o600 });

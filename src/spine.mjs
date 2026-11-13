@@ -1,5 +1,5 @@
 // Everything that decides how a book's spine looks. Pure functions (no files, no network).
-import { rgbToHex, readableTextColor } from './color.mjs';
+import { hexToRgb, rgbToHex, readableTextColor, contrastRatio } from './color.mjs';
 
 // Colors from the study, used when a book has no cover color.
 export const STUDY_PALETTE = [
@@ -17,10 +17,14 @@ export function hashText(text) {
   return h >>> 0;
 }
 
-// Spine width in px from page count: a long book is a thick one. Unknown pages -> a middling width.
+// Spine thickness in px, linear in the page count so it is plainly visible: about 31px at 100 pages,
+// 56px at 400, 90px at 800, and never wider than 96px. Missing page count: a middling 44px.
+export const SPINE_MIN_WIDTH = 26;
+export const SPINE_MAX_WIDTH = 96;
+export const SPINE_DEFAULT_WIDTH = 44;
 export function spineWidth(pages) {
-  if (!pages || pages < 1) return 40;
-  return Math.max(28, Math.min(76, Math.round(26 + pages * 0.055)));
+  if (!pages || pages < 1) return SPINE_DEFAULT_WIDTH;
+  return Math.max(SPINE_MIN_WIDTH, Math.min(SPINE_MAX_WIDTH, Math.round(22 + pages * 0.085)));
 }
 
 // Spine height in px, 230..298: a little taller for long books, plus a steady wobble from the title.
@@ -122,15 +126,17 @@ export function wrapTitle(text, maxChars) {
 
 // Picks the biggest font that fits, in as many columns as the spine is wide.
 // Returns { lines, fontSize, truncated }. At the smallest size, text that still does not fit is cut with an ellipsis.
-export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT }) {
+//   room / columnsWidth / minFont let a caller (the cover labels) say exactly how much space there is
+export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT, room: roomOverride, columnsWidth, minFont = SPINE_MIN_FONT }) {
   const text = String(title).replace(/\s+/g, ' ').trim() || ' ';
-  const room = titleRoom(height, favorite, authorHeight);
+  const room = roomOverride ?? titleRoom(height, favorite, authorHeight);
+  const avail = columnsWidth ?? (width - SPINE_SIDE_PADDING);
   const factor = letterWidthFactor(family, caps) * SPINE_SAFETY;
   const layoutAt = (fs) => ({
     maxChars: Math.max(1, Math.floor(room / (fs * factor))),
-    columns: Math.max(1, Math.floor((width - SPINE_SIDE_PADDING) / (fs * SPINE_LINE_HEIGHT))),
+    columns: Math.max(1, Math.floor(avail / (fs * SPINE_LINE_HEIGHT))),
   });
-  for (let fs = SPINE_MAX_FONT; fs >= SPINE_MIN_FONT; fs -= 0.5) {
+  for (let fs = SPINE_MAX_FONT; fs >= minFont; fs -= 0.5) {
     const { maxChars, columns } = layoutAt(fs);
     const lines = wrapTitle(text, maxChars);
     const longestWord = Math.max(...text.split(' ').map((w) => w.length));
@@ -139,13 +145,13 @@ export function fitSpineTitle(title, { width, height, family, caps = false, favo
       return { lines, fontSize: fs, truncated: false };
     }
   }
-  const { maxChars, columns } = layoutAt(SPINE_MIN_FONT);
+  const { maxChars, columns } = layoutAt(minFont);
   let lines = wrapTitle(text, maxChars);
-  if (lines.length <= columns) return { lines, fontSize: SPINE_MIN_FONT, truncated: false };
+  if (lines.length <= columns) return { lines, fontSize: minFont, truncated: false };
   lines = lines.slice(0, columns);
   const last = lines[columns - 1];
   lines[columns - 1] = `${last.slice(0, Math.max(1, maxChars - 1)).trimEnd()}…`;
-  return { lines, fontSize: SPINE_MIN_FONT, truncated: true };
+  return { lines, fontSize: minFont, truncated: true };
 }
 
 // Everything the template needs for one spine.
@@ -190,7 +196,7 @@ export function tuneCoverColor(rgb) {
 
 export function homeSpineWidth(pages) {
   if (!pages || pages < 1) return 22;
-  return Math.max(16, Math.min(30, Math.round(14 + pages * 0.03)));
+  return Math.max(13, Math.min(34, Math.round(11 + pages * 0.026)));
 }
 
 export function homeSpineHeight(title) {
@@ -204,4 +210,50 @@ export function coverFontSize(title) {
   if (n <= 20) return 28;
   if (n <= 32) return 23;
   return 19;
+}
+
+// --- spines cut from the real cover (the --covers preview) -------------------------------------
+// Designer's rules: a solid label in the cover's own main color (88% opaque) with a hairline, inset 5px,
+// from 15% down to 9% above the bottom, so the art shows above and below. Text color is chosen by contrast
+// against the label over BOTH the darkest and the lightest pixel under it (4.5:1 for both). Very busy covers
+// get a cream paper label with dark ink. Titles stay at 11px or more; thin spines drop the author.
+
+export const COVER_LABEL_ALPHA = 0.88;
+export const COVER_MIN_FONT = 11;
+export const COVER_THIN_SPINE = 28;
+export const PAPER_LABEL = { bg: '#F4ECD8', text: '#2A2620' };
+
+function blendHex(labelHex, underHex, alpha) {
+  const a = hexToRgb(labelHex);
+  const b = hexToRgb(underHex);
+  return rgbToHex(a.map((v, i) => v * alpha + b[i] * (1 - alpha)));
+}
+
+// stats: { main, dark, light, busy } as produced by coverStats. Returns { kind, bg, text, ratio }.
+export function coverLabelColors(stats) {
+  if (stats.busy) return { kind: 'paper', bg: PAPER_LABEL.bg, text: PAPER_LABEL.text, ratio: contrastRatio(PAPER_LABEL.bg, PAPER_LABEL.text) };
+  const over = [blendHex(stats.main, stats.dark, COVER_LABEL_ALPHA), blendHex(stats.main, stats.light, COVER_LABEL_ALPHA)];
+  let best = null;
+  for (const text of ['#FBF3E2', '#1B1713', '#FFFFFF', '#000000']) {
+    const ratio = Math.min(...over.map((bg) => contrastRatio(bg, text)));
+    if (!best || ratio > best.ratio) best = { text, ratio };
+    if (ratio >= 4.5 && text !== '#FFFFFF' && text !== '#000000') { best = { text, ratio }; break; }
+  }
+  if (best.ratio < 4.5) return { kind: 'paper', bg: PAPER_LABEL.bg, text: PAPER_LABEL.text, ratio: contrastRatio(PAPER_LABEL.bg, PAPER_LABEL.text) };
+  const [r, g, b] = hexToRgb(stats.main);
+  return { kind: 'color', bg: `rgba(${r},${g},${b},${COVER_LABEL_ALPHA})`, text: best.text, ratio: best.ratio };
+}
+
+// Everything the template needs to draw the label on a cover spine.
+export function coverSpineLayout(book, st, stats) {
+  const label = coverLabelColors(stats);
+  const showAuthor = st.width >= COVER_THIN_SPINE && Boolean(book.spineAuthor);
+  const labelHeight = st.height * (1 - 0.15 - 0.09);
+  const fitted = fitSpineTitle(book.spineTitle, {
+    width: st.width, height: st.height, family: st.family, caps: st.caps,
+    room: labelHeight - 8 - 5 - (showAuthor ? 14 : 0),
+    columnsWidth: st.width - 10 - 6,
+    minFont: COVER_MIN_FONT,
+  });
+  return { ...label, showAuthor, lines: fitted.lines, fontSize: fitted.fontSize };
 }
