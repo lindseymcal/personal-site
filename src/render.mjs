@@ -1,7 +1,7 @@
 // Turns data into page HTML. Every function returns a string; none of them read files.
 // ALL text that came from a CSV, a JSON file or an essay is passed through escapeHtml before it is written.
 import { escapeHtml as esc, reviewToHtml, selectHomeShelf, MONTHS } from './books.mjs';
-import { packIntoRows, packIntoTiers } from './layout.mjs';
+import { packIntoRows, packNewestChronologically } from './layout.mjs';
 import { spineStyle, homeSpineWidth, homeSpineHeight, coverFontSize } from './spine.mjs';
 import { substackSubscribeUrl } from './site.mjs';
 
@@ -70,7 +70,8 @@ function homeSpines(books, colorFor, capacities, leanFirstTier) {
     h: homeSpineHeight(b.title),
     bg: spineStyle(b, colorFor(b)).bg,
   }));
-  const tiers = packIntoTiers(picked.map((p) => p.w + 2), capacities);
+  // newest books, shown oldest to newest left to right, top shelf to bottom shelf
+  const tiers = packNewestChronologically(picked.map((p) => p.w + 2), capacities);
   return tiers.map((idx, t) => idx.map((i, k) => ({
     ...picked[i],
     lean: leanFirstTier && t === 0 && k === idx.length - 1 && idx.length > 1,
@@ -215,7 +216,7 @@ function spineHtml(book, st, { lean = false } = {}) {
   const id = bookDomId(book.id);
   const label = `${book.title}, ${book.author}${book.favorite ? ', a favorite' : ''}`;
   const vars = `--w:${st.width}px;--h:${st.height}px;--c:${st.bg};--t:${st.text};${st.band ? `--band:${st.band};` : ''}--f:'${st.family}';--fs:${st.fontSize}px${st.caps ? ';--tt:uppercase' : ''}`;
-  return `<a class="spine${book.favorite ? ' is-fav' : ''}${lean ? ' lean' : ''}" id="s-${id}" href="#b-${id}" aria-label="${esc(label)}" style="${vars}">${book.favorite ? '<i class="foil" aria-hidden="true"></i>' : ''}<span class="t">${esc(book.spineTitle)}</span><span class="a">${esc(book.spineAuthor)}</span></a>`;
+  return `<a class="spine${book.favorite ? ' is-fav' : ''}${lean ? ' lean' : ''}" id="s-${id}" href="#b-${id}" aria-label="${esc(label)}" title="${esc(`${book.title}, ${book.author}`)}" style="${vars}">${book.favorite ? '<i class="foil" aria-hidden="true"></i>' : ''}<span class="t">${st.lines.map((l) => `<span>${esc(l)}</span>`).join('')}</span>${st.authorVertical ? `<span class="a v" style="--ah:${st.authorHeight}px"><span>${esc(book.spineAuthor)}</span></span>` : `<span class="a">${esc(book.spineAuthor)}</span>`}</a>`;
 }
 
 function pulledBookHtml(book, st) {

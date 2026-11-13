@@ -59,6 +59,95 @@ export function spineFontSize(title, width, height, caps = false) {
   return Math.round(Math.max(10, Math.min(19, byLength, byWidth)) * 2) / 2;
 }
 
+// --- fitting the title on the spine -----------------------------------------------------------
+// The title runs up the spine; a long title wraps into several columns side by side. We work out the
+// lines at build time (no script on the page) from rough letter widths, with a safety margin, and the CSS
+// clips and adds an ellipsis as a last resort, so the lettering can never reach the rule or the author.
+
+export const SPINE_MIN_FONT = 10;
+export const SPINE_MAX_FONT = 19;
+const SPINE_SIDE_PADDING = 8;      // total left+right breathing room, px
+const SPINE_LINE_HEIGHT = 1.18;    // column width as a multiple of the font size
+const SPINE_SAFETY = 1.1;          // letters are never wider than we think
+
+// Average letter width as a share of the font size, per typeface (they differ a lot).
+export function letterWidthFactor(family, caps) {
+  const base = {
+    'Cinzel': 0.84,
+    'Playfair Display SC': 0.8,
+    'IM Fell English SC': 0.74,
+    'Libre Baskerville': 0.64,
+    'Josefin Sans': 0.72,
+  }[family] ?? 0.8;
+  return (caps && family !== 'Josefin Sans' ? base * 1.08 : base) + 0.02; // +0.02 for letter spacing
+}
+
+// Room (px) along the spine for the title: the spine's height minus top padding, the star (if any),
+// and the author block with its rule.
+export function titleRoom(height, favorite, authorHeight = AUTHOR_HEIGHT) {
+  return height - 18 - (favorite ? 21 : 0) - (authorHeight + 10) - 6;
+}
+
+// The author under the rule. Normally one line of small type across the spine. If the name is too long to
+// fit across a thin spine, it runs up the spine instead, in a taller block (that takes room from the title).
+export const AUTHOR_HEIGHT = 19;
+const AUTHOR_CHAR_PX = 5.6; // rough width of one letter at 9.5px, with margin
+const AUTHOR_MAX_HEIGHT = 80;
+export function authorLayout(author, width) {
+  const n = String(author ?? '').length;
+  if (n * AUTHOR_CHAR_PX <= width - 8) return { vertical: false, height: AUTHOR_HEIGHT };
+  return { vertical: true, height: Math.min(AUTHOR_MAX_HEIGHT, Math.ceil(n * AUTHOR_CHAR_PX) + 9) };
+}
+
+// Greedy word wrap into lines of at most maxChars characters. A word longer than maxChars is split.
+export function wrapTitle(text, maxChars) {
+  const lines = [];
+  let line = '';
+  const push = () => { if (line) { lines.push(line); line = ''; } };
+  for (const word of String(text).split(/\s+/).filter(Boolean)) {
+    let w = word;
+    while (w.length > maxChars) { // too long for any line: break it
+      push();
+      lines.push(w.slice(0, maxChars));
+      w = w.slice(maxChars);
+    }
+    if (!w) continue;
+    if (!line) line = w;
+    else if (line.length + 1 + w.length <= maxChars) line += ` ${w}`;
+    else { push(); line = w; }
+  }
+  push();
+  return lines;
+}
+
+// Picks the biggest font that fits, in as many columns as the spine is wide.
+// Returns { lines, fontSize, truncated }. At the smallest size, text that still does not fit is cut with an ellipsis.
+export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT }) {
+  const text = String(title).replace(/\s+/g, ' ').trim() || ' ';
+  const room = titleRoom(height, favorite, authorHeight);
+  const factor = letterWidthFactor(family, caps) * SPINE_SAFETY;
+  const layoutAt = (fs) => ({
+    maxChars: Math.max(1, Math.floor(room / (fs * factor))),
+    columns: Math.max(1, Math.floor((width - SPINE_SIDE_PADDING) / (fs * SPINE_LINE_HEIGHT))),
+  });
+  for (let fs = SPINE_MAX_FONT; fs >= SPINE_MIN_FONT; fs -= 0.5) {
+    const { maxChars, columns } = layoutAt(fs);
+    const lines = wrapTitle(text, maxChars);
+    const longestWord = Math.max(...text.split(' ').map((w) => w.length));
+    // a one-column title may be sized freely, but never wider than the spine allows
+    if (lines.length <= columns && longestWord <= maxChars && (columns > 1 || fs <= width * 0.45)) {
+      return { lines, fontSize: fs, truncated: false };
+    }
+  }
+  const { maxChars, columns } = layoutAt(SPINE_MIN_FONT);
+  let lines = wrapTitle(text, maxChars);
+  if (lines.length <= columns) return { lines, fontSize: SPINE_MIN_FONT, truncated: false };
+  lines = lines.slice(0, columns);
+  const last = lines[columns - 1];
+  lines[columns - 1] = `${last.slice(0, Math.max(1, maxChars - 1)).trimEnd()}…`;
+  return { lines, fontSize: SPINE_MIN_FONT, truncated: true };
+}
+
 // Everything the template needs for one spine.
 //   colorHex  the color read from the cover (or null)  - cached outside the repo (see scripts/build.mjs)
 export function spineStyle(book, colorHex) {
@@ -67,6 +156,8 @@ export function spineStyle(book, colorHex) {
   const height = spineHeight(book.pages, book.title);
   const face = spineTypeface(book.pubYear, book.title);
   const text = readableTextColor(bg);
+  const author = authorLayout(book.spineAuthor, width);
+  const fitted = fitSpineTitle(book.spineTitle, { width, height, family: face.family, caps: face.caps, favorite: book.favorite, authorHeight: author.height });
   const showBand = hashText(book.title + '#band') % 2 === 0;
   return {
     bg: bg.toLowerCase(),
@@ -76,7 +167,10 @@ export function spineStyle(book, colorHex) {
     caps: face.caps,
     width,
     height,
-    fontSize: spineFontSize(book.spineTitle, width, height, face.caps),
+    authorVertical: author.vertical,
+    authorHeight: author.height,
+    fontSize: fitted.fontSize,
+    lines: fitted.lines,
   };
 }
 

@@ -107,10 +107,13 @@ test('every spine opens its own book, and every book can be put back', () => {
   assert.ok(html.includes('id="shelf"'));
 });
 
-test('home shelf: newest first (favorites get no special place), using the same colors', () => {
+test('home shelf: the newest reads, shown oldest to newest left to right; same colors as the books page', () => {
   const html = build().pages['index.html'];
-  const first = html.match(/<i class="sp[^"]*" style="width:\d+px;height:\d+px;background:(#[0-9a-f]{6})"/);
-  assert.equal(first[1], '#123456'); // Middlemarch: favorite and the most recent
+  const room = html.slice(html.indexOf('fit-room'), html.indexOf('wall-fit'));
+  const colors = [...room.matchAll(/<i class="sp[^"]*" style="width:\d+px;height:\d+px;background:(#[0-9a-f]{6})"/g)].map((m) => m[1]);
+  assert.ok(colors.length > 8);
+  assert.equal(colors.at(-1), '#123456'); // Middlemarch is the most recent read: last, at the right of the bottom shelf
+  assert.notEqual(colors[0], '#123456');
 });
 
 test('the study has exactly one route into each section and no menu', () => {

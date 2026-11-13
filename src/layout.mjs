@@ -15,6 +15,19 @@ export function packIntoRows(costs, capacity) {
   return rows;
 }
 
+// The home shelf: `costs` are listed NEWEST FIRST. Picks the newest books that fit, then lays them out
+// oldest to newest, left to right and top to bottom (like reading a page), the same direction as the
+// year shelves on the books page. Returns one array of item indexes per shelf.
+export function packNewestChronologically(costs, capacities) {
+  const chosen = packIntoTiers(costs, capacities).flat().sort((a, b) => b - a); // highest index = oldest
+  while (chosen.length > 0) {
+    const tiers = packIntoTiers(chosen.map((i) => costs[i]), capacities);
+    if (tiers.flat().length === chosen.length) return tiers.map((t) => t.map((k) => chosen[k]));
+    chosen.shift(); // re-packing in reading order did not fit everything: drop the oldest and try again
+  }
+  return capacities.map(() => []);
+}
+
 // A fixed number of shelves, each with its own width. Fills the first shelf, then the next.
 // A book that does not fit on the current shelf goes to the next; books that fit nowhere are left out.
 // Returns one array of item indexes per shelf (possibly empty).

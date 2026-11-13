@@ -173,7 +173,7 @@ test('unmatchedExtraIds finds typos but skips _notes', () => {
   assert.deepEqual(unmatchedExtraIds([mk('1', 'A', '2026-01-01')], { _readme: 'x', 1: {}, 99: {} }), ['99']);
 });
 
-test('groupByYear: newest year first, newest book first, undated last', () => {
+test('groupByYear: newest year first, books oldest-first inside a year (left to right), undated last', () => {
   const groups = groupByYear([
     mk('1', 'Old', '2024-05-01'),
     mk('2', 'New', '2026-05-01'),
@@ -181,7 +181,7 @@ test('groupByYear: newest year first, newest book first, undated last', () => {
     mk('4', 'Nodate', '0000-00-00', { year: 0 }),
   ]);
   assert.deepEqual(groups.map((g) => g.label), ['2026', '2024', 'Undated']);
-  assert.deepEqual(groups[0].books.map((b) => b.title), ['Newer', 'New']);
+  assert.deepEqual(groups[0].books.map((b) => b.title), ['New', 'Newer']);
 });
 
 test('byRecent breaks ties by title so the order is stable', () => {

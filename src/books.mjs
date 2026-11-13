@@ -209,13 +209,16 @@ export function byRecent(a, b) {
   return a.title.localeCompare(b.title);
 }
 
-// Shelves by year: newest year first, newest book first inside a year. Undated books go last.
+// Shelves by year: newest year first; inside a year, oldest book first (so a shelf reads left to right
+// in reading order). Undated books go last.
 export function groupByYear(books) {
   const map = new Map();
   for (const b of [...books].sort(byRecent)) {
     if (!map.has(b.year)) map.set(b.year, []);
     map.get(b.year).push(b);
   }
+  // inside a year the shelf reads left to right in the order the books were read: oldest first
+  for (const list of map.values()) list.sort((a, b) => (a.sortKey < b.sortKey ? -1 : a.sortKey > b.sortKey ? 1 : a.title.localeCompare(b.title)));
   const years = [...map.keys()].sort((a, b) => (a === 0) - (b === 0) || b - a);
   return years.map((y) => ({ year: y, label: y === 0 ? 'Undated' : String(y), books: map.get(y) }));
 }

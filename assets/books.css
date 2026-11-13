@@ -5,18 +5,26 @@
 .tier:last-child{border-bottom:0}
 .plate{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:linear-gradient(#D8B36E,#A98247);color:#3A2A14;font:400 15px/1 var(--hand);padding:2px 12px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4);z-index:2}
 .tier:last-child .plate{bottom:-22px}
-.spine{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 0 12px;
+.spine{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:18px 0 10px;
     width:var(--w);height:var(--h);background-color:var(--c);color:var(--t);font-family:var(--f);border-radius:3px 3px 1px 1px;
-    background-image:linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.2));
-    background-size:100% 2px,100% 2px,100% 100%;background-position:0 10px,0 calc(100% - 40px),0 0;background-repeat:no-repeat;
+    background-image:linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.2));
+    background-size:100% 2px,100% 100%;background-position:0 10px,0 0;background-repeat:no-repeat;
     box-shadow:0 0 0 1px rgba(0,0,0,.15);transition:filter .25s}
-.spine .t{text-transform:var(--tt,none);writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs,15px);line-height:1;white-space:nowrap;letter-spacing:.02em}
-.spine .a{font:400 9.5px/1.1 var(--body);opacity:.85;text-align:center;max-width:90%}
+/* The title takes ALL the room between the star and the author block, runs up the spine, and wraps into columns
+   (the build works out the lines). It clips with an ellipsis rather than ever reaching the rule or the author. */
+.spine .t{flex:1 1 0;min-height:0;max-width:100%;overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
+    text-transform:var(--tt,none);font-size:var(--fs,15px);line-height:1.18;letter-spacing:.02em}
+.spine .t span{display:block;max-height:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* The author sits under its own rule, which is part of the author block, so text can never cross it. */
+.spine .a{flex:none;align-self:stretch;height:19px;padding:5px 3px 0;border-top:2px solid var(--band,transparent);
+    font:400 9.5px/12px var(--body);opacity:.88;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* a name too long to fit across a thin spine runs up the spine, under the same rule */
+.spine .a.v{height:var(--ah,60px);display:flex;justify-content:center;padding:6px 0 0}
+.spine .a.v span{display:block;writing-mode:vertical-rl;transform:rotate(180deg);max-height:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:12px}
 .foil{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#FFF1B8 0,#E0B44E 35%,#9C7424 55%,#F2D27A 75%,#C9A040 100%);
     clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 1px rgba(0,0,0,.4))}
-.spine.is-fav{padding-top:12px}
+.spine.is-fav{padding-top:16px}
 .spine.is-fav .foil{margin-bottom:6px}
-.spine .t{max-height:100%}
 .foil.big{width:26px;height:26px;vertical-align:4px;margin-left:8px}
 .book .foil{position:absolute;left:50%;top:22px;width:22px;height:22px;margin-left:-6px}
 .spine:hover,.spine:focus-visible{filter:brightness(1.12) drop-shadow(0 0 10px rgba(245,206,122,.45))}
@@ -71,9 +79,7 @@
   .tier:last-child{border-bottom:0}
   .tier::before{content:"";order:-1;flex-basis:100%;height:0}
   .plate{position:static;transform:none;order:-2;margin:0 0 8px;bottom:auto!important}
-  .spine{width:calc(var(--w)*.82);height:calc(var(--h)*.74);padding:12px 0 8px}
-  .spine .t{font-size:calc(var(--fs,15px)*.82)}
-  .spine .a{font-size:8px}
+  .spine{zoom:.8}
   .lean{transform:none;margin-left:0}
   .bookend,.plant{display:none}
   .pull{position:fixed;overflow:auto;padding:70px 14px 40px;z-index:30}
