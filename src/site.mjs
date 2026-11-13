@@ -51,12 +51,24 @@ export function normalizeConfig(input = {}) {
 export function substackSubscribeUrl(substackUrl) {
   const base = safeUrl(substackUrl, '');
   if (!base) return '#';
+  // a profile address on substack.com itself (https://substack.com/@name) is already the right page
+  try { if (/^(www\.)?substack\.com$/i.test(new URL(base).hostname)) return base; } catch { return '#'; }
   return base.replace(/\/+$/, '') + '/subscribe';
 }
 
 // --- projects ---------------------------------------------------------------------------------
 
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
+
+// A project picture: a local file under assets/projects/ (jpg, webp or png) with alt text and its size.
+export function normalizeProjectImage(img) {
+  const src = String(img?.src ?? '');
+  const width = Number(img?.width), height = Number(img?.height);
+  if (!/^assets\/projects\/[a-z0-9-]+\.(jpg|webp|png)$/.test(src)) return null;
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 4000 || height > 4000) return null;
+  const alt = clip(img?.alt, 300);
+  return alt ? { src, alt, width, height } : null;
+}
 
 export function normalizeProject(p) {
   const title = clip(p?.title, 80);
@@ -74,6 +86,7 @@ export function normalizeProject(p) {
       .map((l) => ({ label: clip(l?.label, 40), url: safeUrl(l?.url, '') }))
       .filter((l) => l.label && l.url)
       .slice(0, 3),
+    image: normalizeProjectImage(p?.image),
     problem: clip(p?.problem, 600),
     built: (Array.isArray(p?.built) ? p.built : []).map((x) => clip(x, 160)).filter(Boolean).slice(0, 6),
     learned: clip(p?.learned, 600),

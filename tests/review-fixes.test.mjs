@@ -243,12 +243,12 @@ test('essay footer: the essay-substack meta is the single source of the footer l
 
   const dir = makeCopy();
   const file = path.join(dir, 'writing/placeholder-essay-one.html');
-  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('content="https://your-name.substack.com/p/placeholder-essay-one"', 'content="https://zee.substack.com/p/changed"'));
+  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace('content="https://substack.com/@lindseymcal"', 'content="https://zee.substack.com/p/changed"'));
   const r = run(dir, [FIXTURE, '--offline']);
   assert.equal(r.status, 0, r.stderr);
   const updated = fs.readFileSync(file, 'utf8');
   assert.ok(updated.includes('<a href="https://zee.substack.com/p/changed" target="_blank"'));
-  assert.ok(!updated.includes('your-name.substack.com/p/placeholder-essay-one'));
+  assert.ok(!updated.includes('href="https://substack.com/@lindseymcal"'));
 });
 
 test('committed essays already match their own essay-substack meta', () => {
@@ -312,7 +312,7 @@ test('the build leaves a damaged essay untouched and warns; a rejected essay-sub
   const text = fs.readFileSync(damaged, 'utf8').replace('<!--/substack-link-->', '');
   fs.writeFileSync(damaged, text);
   const bad = path.join(dir, 'writing/placeholder-essay-two.html');
-  const badText = fs.readFileSync(bad, 'utf8').replace(/content="https:\/\/your-name\.substack\.com\/p\/placeholder-essay-two"/, 'content="javascript:alert(1)"');
+  const badText = fs.readFileSync(bad, 'utf8').replace(/content="https:\/\/substack\.com\/@lindseymcal"/, 'content="javascript:alert(1)"');
   fs.writeFileSync(bad, badText);
   const r = run(dir, [FIXTURE, '--offline']);
   assert.equal(r.status, 0, r.stderr);

@@ -219,7 +219,7 @@ test('real Tab key: the first stop on every inner page is "Back to the study"; o
   const first = `(() => { const e = document.activeElement; return e && e !== document.body ? { label: e.getAttribute('aria-label'), href: e.getAttribute('href') } : null; })()`;
   for (const [w, h, mobile] of [[1440, 900, false], [390, 844, true]]) {
     await tab.view(w, h, { mobile });
-    for (const page of ['books.html', 'writing.html', 'projects.html', 'projects/lorem-kit.html', 'writing/placeholder-essay-two.html']) {
+    for (const page of ['books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'writing/placeholder-essay-two.html']) {
       await tab.open(page);
       await tab.tab();
       const f = await tab.eval(first);

@@ -217,7 +217,7 @@ globalThis.fetch = async (url) => ({ status: 200, ok: true, url: 'https://covers
   assert.ok(!fs.existsSync(path.join(dir, 'covers')));
   assert.ok(!fs.existsSync(path.join(dir, 'index.html')), 'the real site pages are untouched');
   const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? (['preview', '.agent-fleet'].includes(e.name) && d === dir ? [] : walk(path.join(d, e.name))) : [path.join(d, e.name)]));
-  assert.deepEqual(walk(dir).filter((f) => /\.(jpe?g|png|gif|webp)$/i.test(f) && !f.endsWith('x.jpg') && !f.includes('/assets/art/')), [], 'no images anywhere outside preview/ and the private cache');
+  assert.deepEqual(walk(dir).filter((f) => /\.(jpe?g|png|gif|webp)$/i.test(f) && !f.endsWith('x.jpg') && !f.includes('/assets/art/') && !f.includes('/assets/projects/')), [], 'no images anywhere outside preview/ and the private cache');
   // a later preview WITHOUT --covers removes the pictures from preview/
   const plain = runBuild(dir, [FIXTURE, '--out', path.join(dir, 'preview'), '--cache', `${dir}-c.json`, '--offline']);
   assert.equal(plain.status, 0, plain.stderr);

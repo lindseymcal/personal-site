@@ -33,6 +33,7 @@ test('normalizeConfig fills defaults and rejects bad urls', () => {
 test('substack subscribe link', () => {
   assert.equal(substackSubscribeUrl('https://zee.substack.com/'), 'https://zee.substack.com/subscribe');
   assert.equal(substackSubscribeUrl('nope'), '#');
+  assert.equal(substackSubscribeUrl('https://substack.com/@lindseymcal'), 'https://substack.com/@lindseymcal'); // a profile page is used as it is
 });
 
 test('normalizeProject trims, slugs, and drops bad links', () => {

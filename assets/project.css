@@ -37,3 +37,5 @@ body.p-project{min-height:100vh;padding:56px 0 80px;--rule:#D9CBAE;
   .cols{grid-template-columns:1fr;gap:24px}
   .shot{height:220px}
 }
+.shot.pic{height:auto;background:none;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.shot.pic img{display:block;width:100%;height:auto;border-radius:8px}

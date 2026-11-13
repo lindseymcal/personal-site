@@ -81,10 +81,10 @@
 .room .bag .stitch{left:20px;top:94px;width:84px;height:26px;border-radius:0 0 40px 40px / 0 0 22px 22px;border-bottom:1.5px dashed rgba(245,206,122,.45);z-index:3}
 .room .bag .tab{left:54px;top:96px;width:16px;height:11px;border-radius:2px;background:linear-gradient(#F7E19A,#B98B4A);z-index:3;box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .room .bag .ring{top:78px;width:9px;height:9px;border-radius:50%;border:2px solid #C9A040;z-index:3}
-.room .resume{left:398px;top:574px;width:66px;height:80px;z-index:2}
+.room .resume{left:424px;top:574px;width:66px;height:80px;z-index:2}
 .room .resume .art{position:absolute;left:4px;top:0;width:56px;height:76px;background:#FFFDF6;transform:rotate(-48deg);transform-origin:85% 88%;box-shadow:0 2px 6px rgba(0,0,0,.3);
     background-image:linear-gradient(#9AA3A8,#9AA3A8),repeating-linear-gradient(#FFFDF6 0 7px,#C9CED1 7px 8px);background-size:60% 4px,80% 34px;background-position:7px 8px,5px 20px;background-repeat:no-repeat}
-.room .resume .label{left:-104px;top:-22px}
+.room .resume .label{left:-130px;top:-22px}
 .room .linkedin{left:480px;top:644px;width:38px;height:60px;z-index:4}
 .room .linkedin .art{position:absolute;left:0;top:0;width:38px;height:60px;transform-origin:8px 0}
 .room .string{position:absolute;left:7px;top:0;width:2px;height:16px;background:#C9A040}
@@ -183,10 +183,20 @@
 .wall .bag .stitch{left:20px;top:94px;width:84px;height:26px;border-radius:0 0 40px 40px / 0 0 22px 22px;border-bottom:1.5px dashed rgba(245,206,122,.45);z-index:3}
 .wall .bag .tab{left:54px;top:96px;width:16px;height:11px;border-radius:2px;background:linear-gradient(#F7E19A,#B98B4A);z-index:3}
 .wall .bag .ring{top:78px;width:9px;height:9px;border-radius:50%;border:2px solid #C9A040;z-index:3}
-.wall .resume{left:172px;top:1384px;width:66px;height:80px;z-index:2}
+.wall .resume{left:192px;top:1384px;width:66px;height:80px;z-index:2}
 .wall .resume i{position:absolute;left:4px;top:0;width:56px;height:76px;background:#FFFDF6;background-image:linear-gradient(#9AA3A8,#9AA3A8),repeating-linear-gradient(#FFFDF6 0 7px,#C9CED1 7px 8px);background-size:60% 4px,80% 34px;background-position:7px 8px,5px 20px;background-repeat:no-repeat;transform:rotate(-48deg);transform-origin:85% 88%;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.wall .resume .tag{left:-110px;top:-18px}
+.wall .resume .tag{left:-130px;top:-18px}
 .wall .linkedin{left:254px;top:1454px;width:38px;height:60px;z-index:4}
 .wall .linkedin .l{position:absolute;left:-6px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 3px #C9A040,0 3px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:400 18px/1 var(--hand);color:#3B4A73}
 .wall .linkedin .tag{left:34px;top:14px}
 .wall .str{position:absolute;left:7px;top:0;width:2px;height:16px;background:#C9A040}
+
+/* ---- the small shelf: real spines with lettering, scaled to the shelf (same look as the books page) ---- */
+.room .hs,.wall .hs{display:flex;flex-direction:column;align-items:center;width:var(--w);height:var(--h);padding:8px 0 5px;overflow:hidden;
+  background-color:var(--c);color:var(--t);font-family:var(--f);font-style:normal;border-radius:2px 2px 0 0;box-shadow:inset -3px 0 0 rgba(0,0,0,.16);
+  background-image:linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.2));
+  background-size:100% 1px,100% 100%;background-position:0 4px,0 0;background-repeat:no-repeat}
+.hs .t{flex:1 1 0;min-height:0;max-width:100%;overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;
+  text-transform:var(--tt,none);font-size:var(--fs,9px);line-height:1.18;letter-spacing:.02em}
+.hs .t span{display:block;max-height:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs .a{flex:none;align-self:stretch;height:14px;padding:3px 1px 0;border-top:1px solid var(--band,transparent);font:400 7px/9px var(--body);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.9}

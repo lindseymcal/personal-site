@@ -127,7 +127,7 @@ export function wrapTitle(text, maxChars) {
 // Picks the biggest font that fits, in as many columns as the spine is wide.
 // Returns { lines, fontSize, truncated }. At the smallest size, text that still does not fit is cut with an ellipsis.
 //   room / columnsWidth / minFont let a caller (the cover labels) say exactly how much space there is
-export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT, room: roomOverride, columnsWidth, minFont = SPINE_MIN_FONT }) {
+export function fitSpineTitle(title, { width, height, family, caps = false, favorite = false, authorHeight = AUTHOR_HEIGHT, room: roomOverride, columnsWidth, minFont = SPINE_MIN_FONT, maxFont = SPINE_MAX_FONT }) {
   const text = String(title).replace(/\s+/g, ' ').trim() || ' ';
   const room = roomOverride ?? titleRoom(height, favorite, authorHeight);
   const avail = columnsWidth ?? (width - SPINE_SIDE_PADDING);
@@ -136,7 +136,7 @@ export function fitSpineTitle(title, { width, height, family, caps = false, favo
     maxChars: Math.max(1, Math.floor(room / (fs * factor))),
     columns: Math.max(1, Math.floor(avail / (fs * SPINE_LINE_HEIGHT))),
   });
-  for (let fs = SPINE_MAX_FONT; fs >= minFont; fs -= 0.5) {
+  for (let fs = maxFont; fs >= minFont; fs -= 0.5) {
     const { maxChars, columns } = layoutAt(fs);
     const lines = wrapTitle(text, maxChars);
     const longestWord = Math.max(...text.split(' ').map((w) => w.length));
@@ -256,4 +256,23 @@ export function coverSpineLayout(book, st, stats) {
     minFont: COVER_MIN_FONT,
   });
   return { ...label, showAuthor, lines: fitted.lines, fontSize: fitted.fontSize };
+}
+
+// --- the small shelf in the study: the same real spines, scaled down, with lettering ---
+export const HOME_MIN_FONT = 8;
+export const HOME_MAX_FONT = 13;
+export const HOME_THIN_SPINE = 28; // narrower than this: no author line
+
+// tierHeight: the room (px) between shelves. Returns what the little spine needs, from the full-size style `st`.
+export function homeSpineLayout(book, st, tierHeight) {
+  const scale = tierHeight / 270;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const width = clamp(Math.round(st.width * scale), 16, 56);
+  const height = Math.round(tierHeight * (0.74 + 0.26 * clamp((st.height - 228) / 70, 0, 1)));
+  const showAuthor = width >= HOME_THIN_SPINE && Boolean(book.spineAuthor);
+  const room = height - 8 - (showAuthor ? 14 : 0) - 8;
+  const fitted = fitSpineTitle(book.spineTitle, {
+    width, height, family: st.family, caps: st.caps, room, columnsWidth: width - 6, minFont: HOME_MIN_FONT, maxFont: HOME_MAX_FONT,
+  });
+  return { width, height, showAuthor, lines: fitted.lines, fontSize: fitted.fontSize };
 }
