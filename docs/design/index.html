@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="The lamplit study, in full: every object is the one way into its part of the site, each answers your pointer with its own small motion, and a little window onto the study is always the way home.">
+<title>Personal site: the lamplit study, full mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{background:#1C2133;color:#D9DDE8;font:17px/1.55 Andika,system-ui,sans-serif;padding:40px 32px 90px}
+  main{max-width:1300px;margin:0 auto}
+  .text{max-width:74ch}
+  h1{font:400 46px/1.05 "Patrick Hand",cursive;color:#fff}
+  h2{font:400 32px/1.1 "Patrick Hand",cursive;color:#fff}
+  h3{font:400 24px/1.15 "Patrick Hand",cursive;color:#fff;margin-top:18px}
+  .lede{margin:12px 0 8px}
+  .note{font-size:15px;color:#AEB5C8}
+  section{margin-top:54px;padding-top:28px;border-top:2px dashed #3A4260}
+  .idea{font-weight:700;margin:6px 0 10px;color:#fff}
+  ul{margin:8px 0 0 1.2em}
+  li{margin:4px 0}
+  a{color:#F5CE7A}
+  .open{display:inline-block;margin:12px 0 14px;font-weight:700}
+  iframe{display:block;border:0;border-radius:12px;background:#232A40}
+  .desk{width:1280px;height:800px}
+  .tall{width:1280px;height:900px}
+  .row{display:flex;gap:40px;align-items:flex-start;margin:26px 0 0 10px}
+  .phone{width:390px;height:844px;border-radius:40px;box-shadow:0 0 0 10px #0E1120;flex:none}
+  .decide{background:rgba(245,206,122,.08);border-radius:12px;padding:18px 22px;margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+  <div class="text">
+    <h1>Your personal site: the lamplit study, in full</h1>
+    <p class="lede">This is option C as agreed, with your changes: plain notebook pages, a small and different hover motion on every object, one route into each section (no top menu, no bottom strip), Instagram and LinkedIn plus résumé in the room, books as real-looking books from your Goodreads, and as little text as possible. The pages link to each other, so you can click around: start at the study.</p>
+    <p class="note">Hover (or Tab to) anything in the study to see it move and its tag appear. Motion is CSS only and switches off when a device asks for reduced motion. On the books page, click any spine to pull it out (Persuasion is out to start); click outside to put it back. All names, essays and links are placeholders. Each page is plain HTML and CSS with no scripts.</p>
+  </div>
+
+  <section>
+    <h2>The study (home)</h2>
+    <p class="idea">The study is the whole menu: every object is the one way into its part of the site, and it answers your pointer with its own small motion.</p>
+    <div class="text">
+      <ul>
+        <li><b>Bookshelf</b> opens Books (one leaning book tips over). <b>Desk and notebook</b> open Writing (the lamp wobbles and a page lifts). <b>Pegboard</b> opens Projects (the tins sway).</li>
+        <li><b>Art site and Instagram, one route each:</b> the framed painting opens your art site (it tilts on its nail), and a photo taped beside it, square like an Instagram post and tagged "art instagram", opens Instagram (it swings on its tape).</li>
+        <li><b>LinkedIn and résumé live in a small shoulder bag</b> on the floor by the desk, an open-top bucket bag in dusty plum with a brass strap. The résumé stands in the opening at a low, casual angle and slides up and out along that angle on hover; LinkedIn is a round "in" charm on the strap that swings.</li>
+        <li>The only text always on screen is your name. Each object's tag appears on hover or keyboard focus, and each object has a screen-reader name.</li>
+      </ul>
+    </div>
+    <a class="open" href="home.html">Open the study full screen</a>
+    <iframe class="desk" src="home.html" title="The study, desktop"></iframe>
+  </section>
+
+  <section>
+    <h2>The study on a phone</h2>
+    <div class="row">
+      <iframe class="phone" src="phone.html" title="The study, phone"></iframe>
+      <div class="text">
+        <p class="idea">On a phone the study becomes one tall wall you scroll down, from the painting at the top to the shoulder bag on the floor, with small tags always showing because there is no hover.</p>
+        <p>I chose one tall wall over a grid of tiles (the key-frame version) because it keeps the room a room: you walk down it from the painting and photo, past the desk and lamp, the bookshelf and the pegboard, to the bag on the rug. Touch screens have no hover, so the tags stay visible, and a tap lights the object up before the page opens.</p>
+        <a class="open" href="phone.html">Open the phone view</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The way back home</h2>
+    <div class="text">
+      <p class="idea">A small round window onto the study sits in the top-left corner of every inner page: the lamp, a few spines, the glow. Click it to go back.</p>
+      <p>No text bar. It's a real link named "Back to the study" for screen readers, it's the first thing you reach with Tab, and it brightens on hover as if the lamp turned up. On pages one level deeper (an essay, a project), a second small object sits under it: a closed notebook back to Writing, or a little tin back to Projects.</p>    </div>
+  </section>
+
+  <section>
+    <h2>Writing: the notebook, opened</h2>
+    <p class="idea">The notebook from the desk, opened flat: essays written on plain pages as a handwritten contents list, with Substack tucked in as a small envelope.</p>
+    <p class="text">Plain, unruled pages as you asked. Years in red pencil, titles in blue ink; a pencil line draws under a title on hover. The envelope (its flap opens on hover) is the quiet Substack subscribe link.</p>
+    <a class="open" href="writing.html">Open the notebook full screen</a>
+    <iframe class="desk" src="writing.html" title="Writing index"></iframe>
+  </section>
+
+  <section>
+    <h2>Reading an essay</h2>
+    <p class="idea">One page lifted out of the notebook and laid under the lamp: easy to read, with Substack as a quiet envelope at the end.</p>
+    <p class="text">Andika for reading at a comfortable size, Patrick Hand only for the title, headings and pull quotes. The one Substack line sits at the very end, small, next to a little envelope.</p>
+    <a class="open" href="essay.html">Open the essay full screen</a>
+    <iframe class="tall" src="essay.html" title="Essay page"></iframe>
+  </section>
+
+  <section>
+    <h2>Books: the shelf, and a pulled-out book</h2>
+    <p class="idea">A wall of real-looking books, one spine per book from your Goodreads shelf; pull one out and it comes forward with your rating, your review if you wrote one, and any note about who recommended it.</p>
+    <div class="text">
+      <ul>
+        <li>Shelves by year read, marked with small brass plates. A spine slides up when you point at it; the gap it leaves glows while it's out.</li>
+        <li>Your Goodreads rating (1 to 5) as five ink dots instead of stars. A book you read but didn't rate shows no dots at all.</li>
+        <li>With a review, the card is a letter. Without one, it's a small library card with just the rating and the date, and no "no review" text.</li>
+        <li>The date says "read Oct 2026", or "shelved Mar 2026" when Goodreads only has the date added. Same pencil, so it never looks like an error.</li>
+        <li>"Recommended by Ada" is a handwritten slip tucked into the book, shown only when you've added one.</li>
+        <li>Favorites get a gold-foil star stamped near the top of the spine, and the same star on the cover and beside the title when pulled out. You mark them in the same small file as "recommended by". Persuasion, Middlemarch, Moby-Dick, My Ántonia and Anna Karenina are starred here.</li>
+      </ul>
+    </div>
+    <a class="open" href="books.html">Open the shelf full screen (click spines)</a>
+    <iframe class="desk" src="books.html" title="Books shelf"></iframe>
+  </section>
+
+  <section>
+    <h2>Real spines: three approaches</h2>
+    <p class="idea">You picked (b): a made spine for every book, colored from its Open Library cover and set in a typeface suited to the book.</p>
+    <p class="text">The comparison stays for the record: (a) photographs of your shelf, (b) made spines, (c) a mix. The build sketch at the bottom now covers (b) only: the Goodreads export, cover colors fetched once at build time, width from page count, a typeface per book, and one small file of your own for favorites, "recommended by", and any colors to fix by hand.</p>
+    <a class="open" href="spines.html">Open the spine comparison</a>
+    <iframe class="tall" src="spines.html" title="Spine approaches"></iframe>
+  </section>
+
+  <section>
+    <h2>Projects: the pegboard, and a plain project page</h2>
+    <p class="idea">Step up to the pegboard: each project is a labeled tin on its own hook, and lifting one off opens a plain page an employer can scan.</p>
+    <p class="text">The tins lift off their hooks on hover. The project page is deliberately plain: name, one line, four facts (role, when, built with, status), two buttons, a picture, and three short sections. Role and status are placeholders for you to fill in.</p>
+    <a class="open" href="projects.html">Open the pegboard</a> &nbsp; <a class="open" href="project.html">Open a project page</a>
+    <iframe class="desk" src="projects.html" title="Projects pegboard"></iframe>
+    <iframe class="tall" src="project.html" title="Project page" style="margin-top:20px"></iframe>
+  </section>
+
+  <section>
+    <h2>Hover states and book cards</h2>
+    <p class="idea">Every object caught mid-motion, next to a faint ghost of where it rests, plus the three ways a pulled-out book can look depending on what Goodreads has, and how a favorite looks.</p>
+    <a class="open" href="states.html">Open the states sheet</a>
+    <iframe class="tall" src="states.html" title="Hover states, book cards and favorites"></iframe>
+  </section>
+
+  <section>
+    <h2>Decided, and still open</h2>
+    <div class="text decide">
+      <ul>
+        <li>Decided: keep the current wall (no swap), the brass window is the way home, read books you didn't rate show no dots, and books come from your Goodreads CSV export.</li>
+        <li>Still open: should project pages also have a small résumé link for employers? For now they don't, following your one-route rule; the résumé lives only in the bag.</li>
+        <li>Placeholders to fill in later: your name, art site and Instagram links, LinkedIn, the résumé file, and the Substack address.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!-- Core idea: Three ways to get real-looking spines; you picked (b): a made spine for every book, colored from its Open Library cover and set in a typeface suited to the book. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="Three ways to get real-looking spines; you picked (b): a made spine for every book, colored from its Open Library cover and set in a typeface suited to the book.">
+<title>Book spines: three approaches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&family=Cinzel:wght@500&family=IM+Fell+English+SC&family=Josefin+Sans:wght@600&family=Libre+Baskerville&family=Playfair+Display+SC:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--wood:#7B5236;--wood-dk:#4A2F1E;--paper:#F4EAD5;--glow:#F5CE7A;--hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1C2133;color:#D9DDE8;font:16px/1.55 var(--body);padding:36px 0 60px}
+  .board{width:1200px;margin:0 auto}
+  h1{font:400 34px/1 var(--hand);color:#fff;margin-bottom:6px}
+  .sub{max-width:80ch;color:#AEB5C8;margin-bottom:26px}
+  .approach{display:grid;grid-template-columns:560px 1fr;gap:34px;align-items:center;margin-bottom:26px;padding:22px;border-radius:12px;background:rgba(255,255,255,.03)}
+  .approach.pick{box-shadow:inset 0 0 0 2px rgba(245,206,122,.55)}
+  h2{font:400 28px/1.1 var(--hand);color:#fff;margin-bottom:6px}
+  .approach ul{margin-left:1.1em;font-size:15px}
+  .approach li{margin:3px 0}
+  .pickmark{display:inline-block;background:var(--glow);color:#2A2620;font:400 17px/1 var(--hand);padding:4px 10px;border-radius:4px;margin-left:8px;vertical-align:middle}
+  .shelf{height:334px;background:var(--wood-dk);border:14px solid var(--wood);border-bottom-width:20px;display:flex;align-items:flex-end;gap:3px;padding:0 14px;box-shadow:inset 0 -16px 20px rgba(0,0,0,.28),inset 0 20px 24px -10px rgba(0,0,0,.4)}
+  .spine{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:16px 0 10px;
+    width:var(--w);height:var(--h);background-color:var(--c);color:var(--t);font-family:var(--f);border-radius:3px 3px 1px 1px;
+    background-image:linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.2));
+    background-size:100% 2px,100% 2px,100% 100%;background-position:0 10px,0 calc(100% - 36px),0 0;background-repeat:no-repeat;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+  .spine .t{writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs,15px);line-height:1;white-space:nowrap}
+  .spine .a{font:400 9px/1.1 var(--body);opacity:.85}
+  /* a stand-in for a cropped photo: uneven light, worn edges, faded lettering. Real photos would replace these. */
+  .photo{background-image:
+      radial-gradient(ellipse 80% 30% at 50% 4%,rgba(255,255,255,.18),transparent 70%),
+      repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 2px,rgba(255,255,255,.03) 2px 5px),
+      linear-gradient(90deg,rgba(0,0,0,.4),rgba(255,255,255,.12) 22%,rgba(0,0,0,.05) 50%,rgba(0,0,0,.45)),
+      linear-gradient(rgba(0,0,0,0) 85%,rgba(0,0,0,.25));
+    background-size:auto;background-position:0 0;border-radius:4px 4px 1px 1px;filter:saturate(.8) contrast(.95);box-shadow:0 0 0 1px rgba(0,0,0,.3),inset 0 -3px 0 rgba(0,0,0,.2)}
+  .photo .t{opacity:.82;text-shadow:0 0 1px rgba(0,0,0,.4)}
+  .photo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 70%,rgba(255,255,255,.06) 0 10%,transparent 11%),radial-gradient(circle at 70% 20%,rgba(0,0,0,.08) 0 8%,transparent 9%);border-radius:inherit}
+  .cap{font-size:13.5px;color:#AEB5C8;margin-top:8px}
+  .flow{margin-top:10px;padding:22px;border-radius:12px;background:rgba(255,255,255,.03)}
+  .flow ol{margin-left:1.3em;font-size:15.5px}
+  .flow li{margin:5px 0}
+</style>
+</head>
+<body>
+<div class="board">
+  <h1>Real books on the shelf: three ways to get the spines</h1>
+  <p class="sub">There's no common public source of spine images, and Open Library's Covers API gives front covers only. Your Goodreads CSV export gives each book's title, author, ISBN, page count, your rating, review and dates, so that's the list we build from. The "photo" spines below are drawn stand-ins (the mockup can't load images); real ones would be crops of your own photos.</p>
+
+  <div class="approach">
+    <div>
+      <div class="shelf">
+        <span class="spine photo" style="--w:56px;--h:270px;--c:#2B3A5C;--t:#E9DDBF;--f:'Libre Baskerville';--fs:16px"><span class="t">Middlemarch</span><span class="a">Eliot</span></span>
+        <span class="spine photo" style="--w:38px;--h:236px;--c:#8B5C73;--t:#F2E4EA;--f:'Playfair Display SC'"><span class="t">Persuasion</span><span class="a">Austen</span></span>
+        <span class="spine photo" style="--w:44px;--h:224px;--c:#E8E0CC;--t:#2A2A2A;--f:'Josefin Sans';--fs:13px"><span class="t">WALDEN</span><span class="a">Thoreau</span></span>
+        <span class="spine photo" style="--w:62px;--h:282px;--c:#1F3E46;--t:#DCD3B8;--f:'IM Fell English SC';--fs:18px"><span class="t">Moby-Dick</span><span class="a">Melville</span></span>
+        <span class="spine photo" style="--w:30px;--h:214px;--c:#C9472F;--t:#FFFFFF;--f:'Josefin Sans';--fs:12px"><span class="t">FRANKENSTEIN</span><span class="a">Shelley</span></span>
+        <span class="spine photo" style="--w:48px;--h:258px;--c:#3F3A34;--t:#D8BE7E;--f:'Cinzel';--fs:13px"><span class="t">Jane Eyre</span><span class="a">Brontë</span></span>
+        <span class="spine photo" style="--w:42px;--h:246px;--c:#F0E7D2;--t:#3A3A5A;--f:'Libre Baskerville';--fs:12px"><span class="t">My Ántonia</span><span class="a">Cather</span></span>
+        <span class="spine photo" style="--w:52px;--h:264px;--c:#6E7F5D;--t:#F7F1E0;--f:'Cinzel';--fs:13px"><span class="t">North and South</span><span class="a">Gaskell</span></span>
+      </div>
+      <p class="cap">Stand-ins for photo crops: uneven light, worn edges, your actual editions.</p>
+    </div>
+    <div>
+      <h2>(a) Photograph your own shelf</h2>
+      <ul>
+        <li>Truly real: your editions, wear and all. The most "you".</li>
+        <li>Only covers books you own in print. Library books, ebooks and audiobooks have no spine to photograph.</li>
+        <li>Each new book means a photo and a crop. A crop helper could make this quick, but it's always a step.</li>
+        <li>Lighting and angle vary from photo to photo, so the shelf can look patchy.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="approach pick">
+    <div>
+      <div class="shelf">
+        <span class="spine" style="--w:58px;--h:276px;--c:#2E3F66;--t:#EFE3C6;--band:#C9A86A;--f:'Libre Baskerville';--fs:16px"><span class="t">Middlemarch</span><span class="a">Eliot</span></span>
+        <span class="spine" style="--w:42px;--h:244px;--c:#8C5A78;--t:#F6E9EF;--f:'Playfair Display SC'"><span class="t">Persuasion</span><span class="a">Austen</span></span>
+        <span class="spine" style="--w:40px;--h:230px;--c:#7C9064;--t:#FDF8EA;--f:'Josefin Sans';--fs:13px"><span class="t">WALDEN</span><span class="a">Thoreau</span></span>
+        <span class="spine" style="--w:64px;--h:288px;--c:#24474F;--t:#E8E0C8;--band:#C9A86A;--f:'IM Fell English SC';--fs:18px"><span class="t">Moby-Dick</span><span class="a">Melville</span></span>
+        <span class="spine" style="--w:40px;--h:236px;--c:#1F2430;--t:#D7DBC9;--band:#7E8D6A;--f:'IM Fell English SC'"><span class="t">Frankenstein</span><span class="a">Shelley</span></span>
+        <span class="spine" style="--w:50px;--h:262px;--c:#6E2E35;--t:#F2DFC4;--band:#C9A86A;--f:'Playfair Display SC';--fs:15px"><span class="t">Jane Eyre</span><span class="a">Brontë</span></span>
+        <span class="spine" style="--w:46px;--h:254px;--c:#D4A93E;--t:#2E2412;--band:#2E2412;--f:'Libre Baskerville';--fs:13px"><span class="t">My Ántonia</span><span class="a">Cather</span></span>
+        <span class="spine" style="--w:44px;--h:250px;--c:#B4776C;--t:#FFF5EC;--f:'Cinzel';--fs:12px"><span class="t">North and South</span><span class="a">Gaskell</span></span>
+      </div>
+      <p class="cap">Made spines: color from each book's cover, width from page count, a typeface picked to suit the book.</p>
+    </div>
+    <div>
+      <h2>(b) Made spines from each cover <span class="pickmark">your pick</span></h2>
+      <ul>
+        <li>Works for every book on your Goodreads, owned or not, with no photos.</li>
+        <li>Colors are read from the Open Library front cover by ISBN, once, when the site is built. Width comes from page count, so long books look long.</li>
+        <li>Consistent and tidy: the whole shelf matches the study.</li>
+        <li>They look like books, but they aren't your editions. Some covers are missing or wrong on Open Library, so a few need a color picked by hand.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="approach">
+    <div>
+      <div class="shelf">
+        <span class="spine" style="--w:58px;--h:276px;--c:#2E3F66;--t:#EFE3C6;--band:#C9A86A;--f:'Libre Baskerville';--fs:16px"><span class="t">Middlemarch</span><span class="a">Eliot</span></span>
+        <span class="spine photo" style="--w:38px;--h:236px;--c:#8B5C73;--t:#F2E4EA;--f:'Playfair Display SC'"><span class="t">Persuasion</span><span class="a">Austen</span></span>
+        <span class="spine" style="--w:40px;--h:230px;--c:#7C9064;--t:#FDF8EA;--f:'Josefin Sans';--fs:13px"><span class="t">WALDEN</span><span class="a">Thoreau</span></span>
+        <span class="spine photo" style="--w:62px;--h:282px;--c:#1F3E46;--t:#DCD3B8;--f:'IM Fell English SC';--fs:18px"><span class="t">Moby-Dick</span><span class="a">Melville</span></span>
+        <span class="spine" style="--w:40px;--h:236px;--c:#1F2430;--t:#D7DBC9;--band:#7E8D6A;--f:'IM Fell English SC'"><span class="t">Frankenstein</span><span class="a">Shelley</span></span>
+        <span class="spine photo" style="--w:48px;--h:258px;--c:#3F3A34;--t:#D8BE7E;--f:'Cinzel';--fs:13px"><span class="t">Jane Eyre</span><span class="a">Brontë</span></span>
+        <span class="spine" style="--w:46px;--h:254px;--c:#D4A93E;--t:#2E2412;--band:#2E2412;--f:'Libre Baskerville';--fs:13px"><span class="t">My Ántonia</span><span class="a">Cather</span></span>
+        <span class="spine" style="--w:44px;--h:250px;--c:#B4776C;--t:#FFF5EC;--f:'Cinzel';--fs:12px"><span class="t">North and South</span><span class="a">Gaskell</span></span>
+      </div>
+      <p class="cap">Mixed: made spines everywhere, with photos of your own copies dropped in where you have them.</p>
+    </div>
+    <div>
+      <h2>(c) The mix</h2>
+      <ul>
+        <li>Every book gets a made spine on day one, so the shelf is full and consistent from the start.</li>
+        <li>Whenever you photograph a book you own, its photo replaces the made spine. The shelf gets more real over time, and nothing ever has to wait for a photo.</li>
+        <li>The made spines are tuned to sit well next to photos (slightly worn color, soft light), so the two kinds don't clash.</li>
+        <li>Costs the most to set up (both paths), but it's the only one that's real where it can be and complete everywhere.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="flow">
+    <h2>How the books get onto the shelf (for the Coder later)</h2>
+    <ol>
+      <li>You export your Goodreads library as a CSV file. Your profile isn't public, so the CSV export is the only way in: no RSS feed and no API.</li>
+      <li>A small local build step reads the CSV: title, author, ISBN, page count, your rating, review, date read and date added.</li>
+      <li>For each ISBN it fetches the Open Library front cover once and keeps two colors from it, for the spine and its lettering. Nothing is fetched when someone visits the site.</li>
+      <li>It picks a typeface to suit each book (for example by when it was published) and sets the title and author on the spine.</li>
+      <li>"Recommended by" and favorites live in one small file you edit yourself, keyed by book, because Goodreads doesn't have those fields. A favorite gets a gold-foil star on its spine and on its card.</li>
+      <li>If a cover is missing or wrong on Open Library, that same file can set the book's colors by hand.</li>
+      <li>The step writes plain HTML and CSS, the same as these mockups. No framework, nothing running on the page.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

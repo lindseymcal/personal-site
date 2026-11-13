@@ -1,0 +1,9 @@
+# Goodreads exports: never commit these
+*.csv
+# but the fake sample used by the tests is fine
+!tests/fixtures/*.csv
+# Add a real résumé on purpose, then remove this line
+resume.pdf
+.DS_Store
+node_modules/
+*.log

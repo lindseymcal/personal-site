@@ -1,0 +1,127 @@
+<!-- Core idea: On a phone the study becomes one tall wall you scroll down, from the painting at the top to the satchel on the floor, with small tags always showing because there is no hover. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="On a phone the study becomes one tall wall you scroll down, from the painting at the top to the satchel on the floor, with small tags always showing because there is no hover.">
+<title>Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--glow:#F5CE7A;--wood:#7B5236;--wood-dk:#553723;--paper:#F4EAD5;--ink:#2A2620;--blue-ink:#2E2A9A;--brass:#B98B4A;
+    --plum:#7A4C6B;--moss:#6F8A5B;--teal:#3F7A7A;--mustard:#C9A040;--rose:#B7837A;--navy:#3B4A73;--hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--wall-deep)}
+  body{font:16px/1.5 var(--body);color:var(--ink);max-width:390px;margin:0 auto;
+    background:radial-gradient(ellipse 300px 260px at 50% 520px,rgba(245,206,122,.30),rgba(245,206,122,0) 70%),linear-gradient(var(--wall) 0,var(--wall-deep) 1440px,#4B311F 1440px)}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:4px;border-radius:6px}
+  .wall{position:relative;height:1560px;overflow:hidden}
+  .sign{position:absolute;left:22px;top:22px;font:400 34px/1 var(--hand);color:var(--paper)}
+  .obj{position:absolute;display:block}
+  .tag{position:absolute;z-index:5;background:var(--paper);font:400 19px/1 var(--hand);padding:6px 11px 6px 19px;border-radius:4px 8px 8px 4px;box-shadow:0 3px 8px rgba(0,0,0,.35);white-space:nowrap}
+  .tag::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--wall)}
+  .obj:active{filter:brightness(1.15)}
+
+  .painting{left:30px;top:90px;width:250px;height:200px}
+  .painting .c{position:absolute;inset:20px 0 0 0;border:11px solid var(--brass);background:var(--paper);padding:12px;box-shadow:0 8px 18px rgba(0,0,0,.45)}
+  .painting .c div{width:100%;height:100%;background:radial-gradient(ellipse 60% 30% at 30% 82%,rgba(95,124,153,.9),rgba(95,124,153,0) 70%),linear-gradient(176deg,#9FC6DF 0 38%,#E7D7AE 38% 48%,#9BA89C 48% 66%,#5F7C99 66% 100%)}
+  .painting .tag{left:14px;top:178px}
+  .postcard{left:268px;top:140px;width:96px;height:118px;transform:rotate(6deg)}
+  .postcard .p{position:absolute;inset:0;background:#FBF6EA;padding:7px 7px 24px;box-shadow:0 6px 12px rgba(0,0,0,.4)}
+  .postcard .p div{width:100%;height:100%;background:radial-gradient(circle at 30% 35%,#F2D58A 0 12%,transparent 13%),linear-gradient(#E8B48C 0 45%,#B7837A 45% 60%,#6F8A5B 60%)}
+  .postcard .tape{position:absolute;left:28px;top:-8px;width:42px;height:16px;background:rgba(201,160,64,.55)}
+  .postcard .tag{left:-78px;top:128px;transform:rotate(-6deg)}
+
+  .desk{left:0;top:340px;width:390px;height:300px}
+  .lamp{position:absolute;left:30px;top:20px;width:130px;height:200px}
+  .lamp .base{position:absolute;left:6px;top:186px;width:60px;height:12px;border-radius:30px 30px 3px 3px;background:#2B2B2B}
+  .lamp .arm{position:absolute;left:32px;top:40px;width:7px;height:150px;background:#2B2B2B;transform:rotate(14deg);transform-origin:bottom}
+  .lamp .shade{position:absolute;left:34px;top:12px;width:100px;height:58px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%);transform:rotate(18deg)}
+  .notebook{position:absolute;left:150px;top:112px;width:210px;height:100px;display:grid;grid-template-columns:1fr 1fr;transform:perspective(420px) rotateX(36deg);transform-origin:bottom}
+  .notebook i{background:var(--paper);border:1px solid #CDBE9E;padding:10px;font:400 15px/1.1 var(--hand);font-style:normal;color:var(--blue-ink)}
+  .notebook i:first-child{border-radius:5px 0 0 5px;box-shadow:inset -8px 0 10px -6px rgba(0,0,0,.25)}
+  .notebook i:last-child{border-radius:0 5px 5px 0;box-shadow:inset 8px 0 10px -6px rgba(0,0,0,.25)}
+  .top{position:absolute;left:16px;right:16px;top:212px;height:18px;background:var(--wood);border-radius:3px;box-shadow:0 7px 0 var(--wood-dk)}
+  .leg{position:absolute;top:236px;width:14px;height:64px;background:var(--wood-dk)}
+  .desk .tag{left:200px;top:62px}
+
+  .shelf{left:22px;top:700px;width:346px;height:300px}
+  .case{position:absolute;inset:0;background:var(--wood-dk);border:12px solid var(--wood);border-bottom-width:18px;display:grid;grid-template-rows:1fr 1fr;box-shadow:0 10px 22px rgba(0,0,0,.4)}
+  .tier{display:flex;align-items:flex-end;gap:2px;padding:0 8px;border-bottom:9px solid var(--wood);box-shadow:inset 0 -12px 16px rgba(0,0,0,.25)}
+  .tier:last-child{border-bottom:0}
+  .sp{display:block;width:20px;border-radius:2px 2px 0 0;box-shadow:inset -3px 0 0 rgba(0,0,0,.16)}
+  .shelf .tag{right:-6px;top:-16px}
+
+  .peg{left:22px;top:1060px;width:346px;height:250px}
+  .board{position:absolute;inset:0;background-color:#C8A77E;background-image:radial-gradient(circle,#8C6E48 2px,transparent 2.6px);background-size:20px 20px;border:9px solid #A98758;box-shadow:0 10px 22px rgba(0,0,0,.4)}
+  .tin{position:absolute;width:140px;height:88px;border-radius:6px;padding:9px;box-shadow:0 5px 8px rgba(0,0,0,.3)}
+  .tin span{display:block;background:var(--paper);border-radius:3px;padding:6px;font:400 17px/1.05 var(--hand);text-align:center}
+  .peg .tag{left:-6px;top:-16px}
+
+  .floor{position:absolute;left:0;right:0;top:1440px;bottom:0;background:repeating-linear-gradient(90deg,#4B311F 0 96px,#553723 96px 98px)}
+  .rug{position:absolute;left:40px;top:1486px;width:310px;height:62px;border-radius:50%;background:#8E5A4A;box-shadow:0 5px 10px rgba(0,0,0,.35)}
+  .rug i{position:absolute;display:block;border-radius:50%}
+  .rug i:nth-child(1){left:6%;right:6%;top:5.2%;bottom:7%;background:#7A4C6B}
+  .rug i:nth-child(2){left:12.5%;right:12.5%;top:10.8%;bottom:14.5%;background:#C9A26A}
+  .rug i:nth-child(3){left:19.5%;right:19.5%;top:16.8%;bottom:22.6%;background:#5F6E52}
+  .rug i:nth-child(4){left:27%;right:27%;top:23.2%;bottom:31.2%;background:#8E5A4A}
+  .rug i:nth-child(5){left:35%;right:35%;top:30%;bottom:40.5%;background:#C9A26A}
+  .bag{position:absolute;left:150px;top:1366px;width:124px;height:132px}
+  .bag i{position:absolute;display:block}
+  .bag .strap{left:10px;top:0;width:104px;height:84px;border:3.5px solid #B98B4A;border-bottom:0;border-radius:50% 50% 0 0 / 80% 80% 0 0}
+  .bag .inside{left:10px;top:70px;width:104px;height:24px;border-radius:50%;background:radial-gradient(ellipse at 50% 70%,#3A1C28,#5A2C3E);box-shadow:inset 0 0 0 3px #93526A;z-index:1}
+  .bag .body{left:10px;top:82px;width:104px;height:50px;border-radius:3px 3px 46px 46px / 3px 3px 30px 30px;background:linear-gradient(#A8667A,#80465A);box-shadow:0 8px 14px rgba(0,0,0,.45);z-index:3}
+  .bag .lip{left:10px;top:70px;width:104px;height:24px;border-radius:50%;border-bottom:3px solid #C78C9C;z-index:3}
+  .bag .stitch{left:20px;top:94px;width:84px;height:26px;border-radius:0 0 40px 40px / 0 0 22px 22px;border-bottom:1.5px dashed rgba(245,206,122,.45);z-index:3}
+  .bag .tab{left:54px;top:96px;width:16px;height:11px;border-radius:2px;background:linear-gradient(#F7E19A,#B98B4A);z-index:3}
+  .bag .ring{top:78px;width:9px;height:9px;border-radius:50%;border:2px solid #C9A040;z-index:3}
+  .resume{left:172px;top:1384px;width:66px;height:80px;z-index:2}
+  .resume i{position:absolute;left:4px;top:0;width:56px;height:76px;background:#FFFDF6;background-image:linear-gradient(#9AA3A8,#9AA3A8),repeating-linear-gradient(#FFFDF6 0 7px,#C9CED1 7px 8px);background-size:60% 4px,80% 34px;background-position:7px 8px,5px 20px;background-repeat:no-repeat;transform:rotate(-48deg);transform-origin:85% 88%;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .resume .tag{left:-110px;top:-18px}
+  .linkedin{left:254px;top:1454px;width:38px;height:60px;z-index:4}
+  .linkedin .l{position:absolute;left:-6px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 3px #C9A040,0 3px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:400 18px/1 var(--hand);color:#3B4A73}
+  .linkedin .tag{left:34px;top:14px}
+  .str{position:absolute;left:7px;top:0;width:2px;height:16px;background:#C9A040}
+</style>
+</head>
+<body>
+<main class="wall" aria-label="The study">
+  <h1 class="sign">Your Name</h1>
+  <a class="obj painting" href="https://art.example.com" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener"><div class="c"><div></div></div><span class="tag" aria-hidden="true">Art site</span></a>
+  <a class="obj postcard" href="https://www.instagram.com/your-handle" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener"><div class="p"><div></div></div><i class="tape"></i><span class="tag" aria-hidden="true">art instagram</span></a>
+
+  <a class="obj desk" href="writing.html" aria-label="Writing">
+    <div class="lamp" aria-hidden="true"><i class="base"></i><i class="arm"></i><i class="shade"></i></div>
+    <div class="notebook" aria-hidden="true"><i>On keeping a very small notebook</i><i>lorem ipsum dolor</i></div>
+    <div class="top"></div><div class="leg" style="left:30px"></div><div class="leg" style="left:346px"></div>
+    <span class="tag" aria-hidden="true">Writing</span>
+  </a>
+
+  <a class="obj shelf" href="books.html" aria-label="Books">
+    <div class="case" aria-hidden="true">
+      <div class="tier"><i class="sp" style="height:96px;background:var(--plum)"></i><i class="sp" style="height:110px;background:var(--moss)"></i><i class="sp" style="height:86px;background:var(--mustard)"></i><i class="sp" style="height:104px;background:var(--navy)"></i><i class="sp" style="height:92px;background:var(--rose)"></i><i class="sp" style="height:112px;background:var(--teal)"></i><i class="sp" style="height:98px;background:var(--plum)"></i><i class="sp" style="height:104px;background:var(--mustard)"></i><i class="sp" style="height:90px;background:var(--navy)"></i><i class="sp" style="height:108px;background:var(--moss)"></i><i class="sp" style="height:94px;background:var(--rose)"></i><i class="sp" style="height:100px;background:var(--teal)"></i></div>
+      <div class="tier"><i class="sp" style="height:104px;background:var(--teal)"></i><i class="sp" style="height:90px;background:var(--rose)"></i><i class="sp" style="height:112px;background:var(--navy)"></i><i class="sp" style="height:100px;background:var(--moss)"></i><i class="sp" style="height:88px;background:var(--mustard)"></i><i class="sp" style="height:106px;background:var(--plum)"></i><i class="sp" style="height:96px;background:var(--teal)"></i><i class="sp" style="height:110px;background:var(--rose)"></i><i class="sp" style="height:92px;background:var(--navy)"></i></div>
+    </div>
+    <span class="tag" aria-hidden="true">Books</span>
+  </a>
+
+  <a class="obj peg" href="projects.html" aria-label="Projects">
+    <div class="board" aria-hidden="true"></div>
+    <div class="tin" style="left:22px;top:34px;background:linear-gradient(#9DB0BC,#7E929E);transform:rotate(-2deg)" aria-hidden="true"><span>Agent fleet</span></div>
+    <div class="tin" style="left:184px;top:38px;background:linear-gradient(#C9A040,#A98330);transform:rotate(2deg)" aria-hidden="true"><span>Painting app</span></div>
+    <div class="tin" style="left:22px;top:142px;background:linear-gradient(#8E9A77,#6F7B5B);transform:rotate(1deg)" aria-hidden="true"><span>Lorem kit</span></div>
+    <div class="tin" style="left:184px;top:146px;background:linear-gradient(#B7837A,#98665E);transform:rotate(-1deg)" aria-hidden="true"><span>Ipsum tool</span></div>
+    <span class="tag" aria-hidden="true">Projects</span>
+  </a>
+
+  <div class="floor" aria-hidden="true"></div>
+  <div class="rug" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="bag" aria-hidden="true"><i class="strap"></i><i class="inside"></i><i class="body"></i><i class="lip"></i><i class="stitch"></i><i class="tab"></i><i class="ring" style="left:5px"></i><i class="ring" style="left:106px"></i></div>
+  <a class="obj resume" href="resume.pdf" aria-label="My résumé (PDF)"><i></i><span class="tag" aria-hidden="true">Résumé</span></a>
+  <a class="obj linkedin" href="https://www.linkedin.com/in/your-name" aria-label="LinkedIn (opens in a new tab)" target="_blank" rel="noopener"><i class="str"></i><span class="l">in</span><span class="tag" aria-hidden="true">LinkedIn</span></a>
+</main>
+</body>
+</html>

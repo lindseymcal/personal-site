@@ -1,0 +1,212 @@
+<!-- Core idea: The study is the whole menu: every object is the one way into its part of the site, and it answers your pointer with its own small motion. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="The study is the whole menu: every object is the one way into its part of the site, and it answers your pointer with its own small motion.">
+<title>Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wall:#2F3752; --wall-deep:#232A40; --glow:#F5CE7A; --wood:#7B5236; --wood-dk:#553723; --paper:#F4EAD5; --ink:#2A2620; --pencil:#4F4A42; --blue-ink:#2E2A9A;
+    --plum:#7A4C6B; --moss:#6F8A5B; --teal:#3F7A7A; --mustard:#C9A040; --rose:#B7837A; --navy:#3B4A73; --brass:#B98B4A;
+    --hand:"Patrick Hand",cursive; --body:Andika,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--wall-deep)}
+  body{font:17px/1.5 var(--body);color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  .room{position:relative;width:1280px;height:800px;margin:0 auto;overflow:hidden;
+    background:radial-gradient(ellipse 520px 400px at 600px 420px,rgba(245,206,122,.32),rgba(245,206,122,0) 70%),linear-gradient(var(--wall),var(--wall-deep))}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:150px;background:repeating-linear-gradient(90deg,#4B311F 0 126px,#553723 126px 128px)}
+  .floor::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,0) 45%)}
+  /* braided rug in perspective: each ring's center sits higher than the last, so bands are wide at the front and thin at the back */
+  .rug{position:absolute;left:360px;top:690px;width:620px;height:88px;border-radius:50%;background:#8E5A4A;box-shadow:0 6px 12px rgba(0,0,0,.35)}
+  .rug i{position:absolute;display:block;border-radius:50%}
+  .rug i:nth-child(1){left:6%;right:6%;top:5.2%;bottom:7%;background:#7A4C6B}
+  .rug i:nth-child(2){left:12.5%;right:12.5%;top:10.8%;bottom:14.5%;background:#C9A26A}
+  .rug i:nth-child(3){left:19.5%;right:19.5%;top:16.8%;bottom:22.6%;background:#5F6E52}
+  .rug i:nth-child(4){left:27%;right:27%;top:23.2%;bottom:31.2%;background:#8E5A4A}
+  .rug i:nth-child(5){left:35%;right:35%;top:30%;bottom:40.5%;background:#C9A26A}
+  .sign{position:absolute;left:60px;top:32px;font:400 44px/1 var(--hand);color:var(--paper);letter-spacing:.01em}
+
+  /* every object */
+  .obj{position:absolute;display:block;cursor:pointer;border-radius:6px}
+  .obj:focus-visible{outline:3px solid var(--glow);outline-offset:6px}
+  .obj .art{transition:filter .35s ease}
+  .obj:hover .art,.obj:focus-visible .art{filter:drop-shadow(0 0 18px rgba(245,206,122,.45))}
+  .label{position:absolute;z-index:5;background:var(--paper);color:var(--ink);font:400 22px/1 var(--hand);padding:7px 13px 7px 21px;border-radius:4px 8px 8px 4px;box-shadow:0 4px 10px rgba(0,0,0,.35);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s ease}
+  .label::before{content:"";position:absolute;left:8px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--wall);box-shadow:inset 0 0 0 1.5px #8C7B5C}
+  .obj:hover .label,.obj:focus-visible .label{opacity:1}
+
+  /* bookshelf */
+  .shelf{left:60px;top:140px;width:300px;height:510px}
+  .shelf .art{position:absolute;inset:0;background:var(--wood-dk);border:14px solid var(--wood);border-bottom-width:22px;display:grid;grid-template-rows:repeat(3,1fr);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+  .tier{display:flex;align-items:flex-end;gap:2px;padding:0 8px;border-bottom:10px solid var(--wood);box-shadow:inset 0 -14px 18px rgba(0,0,0,.25)}
+  .tier:last-child{border-bottom:0}
+  .sp{display:block;width:22px;border-radius:2px 2px 0 0;box-shadow:inset -3px 0 0 rgba(0,0,0,.16),inset 0 7px 0 -4px rgba(255,255,255,.18),inset 0 -9px 0 -6px rgba(255,255,255,.16)}
+  .sp.lean{transform:rotate(-7deg);transform-origin:bottom left;margin-left:6px}
+  .stack{display:flex;flex-direction:column-reverse;margin-left:auto;gap:2px}
+  .stack i{display:block;height:15px;border-radius:2px}
+  .shelf .label{left:210px;top:40px}
+
+  /* desk, lamp, notebook = writing */
+  .desk{left:490px;top:296px;width:400px;height:354px}
+  .desk .art{position:absolute;inset:0}
+  .tabletop{position:absolute;left:10px;top:224px;width:380px;height:22px;background:var(--wood);border-radius:3px;box-shadow:0 8px 0 var(--wood-dk)}
+  .leg{position:absolute;top:252px;width:18px;height:102px;background:var(--wood-dk)}
+  .lamp{position:absolute;left:12px;top:0;width:170px;height:230px;transform-origin:44px 226px}
+  .lamp .base{position:absolute;left:10px;top:212px;width:70px;height:14px;border-radius:40px 40px 4px 4px;background:#2B2B2B}
+  .lamp .arm{position:absolute;left:40px;top:42px;width:8px;height:176px;background:#2B2B2B;transform:rotate(14deg);transform-origin:bottom}
+  .lamp .shade{position:absolute;left:44px;top:10px;width:120px;height:70px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%);transform:rotate(18deg)}
+  .lamp .bulb{position:absolute;left:74px;top:70px;width:70px;height:26px;border-radius:50%;background:radial-gradient(#FFF3C9,rgba(255,243,201,0) 70%)}
+  .notebook{position:absolute;left:160px;top:110px;width:226px;height:114px;display:grid;grid-template-columns:1fr 1fr;transform:perspective(500px) rotateX(38deg);transform-origin:bottom}
+  .notebook i{display:block;background:var(--paper);border:1px solid #CDBE9E;padding:12px 12px;font:400 17px/1.1 var(--hand);font-style:normal;color:var(--blue-ink)}
+  .notebook i:first-child{border-radius:6px 0 0 6px;box-shadow:inset -8px 0 10px -6px rgba(0,0,0,.25)}
+  .notebook i:last-child{border-radius:0 6px 6px 0;box-shadow:inset 8px 0 10px -6px rgba(0,0,0,.25);transform-origin:left center}
+  .pen{position:absolute;left:300px;top:214px;width:70px;height:5px;border-radius:3px;background:linear-gradient(90deg,#222 0 12%,#3F7A7A 12%);transform:rotate(-8deg)}
+  .desk .label{left:170px;top:44px}
+
+  /* painting = art site */
+  .painting{left:680px;top:60px;width:330px;height:262px}
+  .painting .art{position:absolute;inset:0;transform-origin:50% 0}
+  .wire{position:absolute;left:105px;top:0;width:120px;height:30px;border-top:0;background:linear-gradient(to top right,transparent calc(50% - 1px),#C9B27A 50%,transparent calc(50% + 1px)) left/50% 100% no-repeat,linear-gradient(to top left,transparent calc(50% - 1px),#C9B27A 50%,transparent calc(50% + 1px)) right/50% 100% no-repeat}
+  .nail{position:absolute;left:160px;top:-3px;width:9px;height:9px;border-radius:50%;background:#C8C2B0}
+  .canvas{position:absolute;left:0;top:30px;width:330px;height:232px;border:14px solid var(--brass);background:var(--paper);padding:16px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+  .scene{width:100%;height:100%;background:
+     radial-gradient(ellipse 40% 18% at 70% 30%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%),
+     radial-gradient(ellipse 60% 30% at 30% 82%,rgba(95,124,153,.9),rgba(95,124,153,0) 70%),
+     linear-gradient(176deg,#9FC6DF 0 38%,#E7D7AE 38% 48%,#9BA89C 48% 66%,#5F7C99 66% 100%)}
+  .painting .label{left:96px;top:270px}
+
+  /* postcard = instagram */
+  .postcard{left:1052px;top:100px;width:130px;height:156px}
+  .postcard .art{position:absolute;inset:0;transform:rotate(5deg);transform-origin:50% 8px}
+  .polaroid{position:absolute;left:8px;top:12px;width:114px;height:138px;background:#FBF6EA;padding:9px 9px 30px;box-shadow:0 6px 12px rgba(0,0,0,.4)}
+  .polaroid div{width:100%;height:100%;background:radial-gradient(circle at 30% 35%,#F2D58A 0 12%,transparent 13%),linear-gradient(#E8B48C 0 45%,#B7837A 45% 60%,#6F8A5B 60%)}
+  .tape{position:absolute;left:38px;top:2px;width:56px;height:20px;background:rgba(201,160,64,.55);transform:rotate(-4deg)}
+  .postcard .label{left:-6px;top:166px}
+
+  /* pegboard = projects */
+  .peg{left:936px;top:372px;width:296px;height:246px}
+  .peg .art{position:absolute;inset:0}
+  .board{position:absolute;inset:0;background-color:#C8A77E;background-image:radial-gradient(circle,#8C6E48 2px,transparent 2.6px);background-size:22px 22px;border:10px solid #A98758;box-shadow:0 10px 24px rgba(0,0,0,.4)}
+  .hook{position:absolute;width:6px;height:16px;background:#555;border-radius:3px}
+  .tin{position:absolute;width:118px;height:92px;border-radius:6px;box-shadow:0 5px 8px rgba(0,0,0,.3);padding:10px;transform-origin:50% -12px}
+  .tin span{display:block;background:var(--paper);border-radius:3px;padding:6px 6px;font:400 17px/1.05 var(--hand);text-align:center}
+  .tin.a{left:22px;top:42px;background:linear-gradient(#9DB0BC,#7E929E);transform:rotate(-2deg)}
+  .tin.b{left:156px;top:46px;background:linear-gradient(#C9A040,#A98330);transform:rotate(2deg)}
+  .tin.c{left:22px;top:150px;width:100px;height:72px;background:linear-gradient(#8E9A77,#6F7B5B);transform:rotate(1deg)}
+  .tin.d{left:150px;top:152px;width:96px;height:70px;background:linear-gradient(#B7837A,#98665E);transform:rotate(-2deg)}
+  .tool{position:absolute;right:16px;top:150px;width:10px;height:70px;background:#444;border-radius:5px}
+  .peg .label{left:84px;top:-30px}
+
+  /* satchel: résumé paper + LinkedIn luggage tag */
+  /* open-top bucket shoulder bag: the résumé stands in the opening, LinkedIn is a charm on the strap.
+     Layers: strap, then the dark inside of the opening, then the résumé, then the front of the bag over it. */
+  .bag{position:absolute;left:376px;top:556px;width:124px;height:132px}
+  .bag i{position:absolute;display:block}
+  .bag .strap{left:10px;top:0;width:104px;height:84px;border:3.5px solid #B98B4A;border-bottom:0;border-radius:50% 50% 0 0 / 80% 80% 0 0}
+  .bag .inside{left:10px;top:70px;width:104px;height:24px;border-radius:50%;background:radial-gradient(ellipse at 50% 70%,#3A1C28,#5A2C3E);box-shadow:inset 0 0 0 3px #93526A;z-index:1}
+  .bag .body{left:10px;top:82px;width:104px;height:50px;border-radius:3px 3px 46px 46px / 3px 3px 30px 30px;background:linear-gradient(#A8667A,#80465A);box-shadow:0 8px 14px rgba(0,0,0,.45);z-index:3}
+  .bag .lip{left:10px;top:70px;width:104px;height:24px;border-radius:50%;border-bottom:3px solid #C78C9C;z-index:3}
+  .bag .stitch{left:20px;top:94px;width:84px;height:26px;border-radius:0 0 40px 40px / 0 0 22px 22px;border-bottom:1.5px dashed rgba(245,206,122,.45);z-index:3}
+  .bag .tab{left:54px;top:96px;width:16px;height:11px;border-radius:2px;background:linear-gradient(#F7E19A,#B98B4A);z-index:3;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .bag .ring{top:78px;width:9px;height:9px;border-radius:50%;border:2px solid #C9A040;z-index:3}
+  .resume{left:398px;top:574px;width:66px;height:80px;z-index:2}
+  .resume .art{position:absolute;left:4px;top:0;width:56px;height:76px;background:#FFFDF6;transform:rotate(-48deg);transform-origin:85% 88%;box-shadow:0 2px 6px rgba(0,0,0,.3);
+    background-image:linear-gradient(#9AA3A8,#9AA3A8),repeating-linear-gradient(#FFFDF6 0 7px,#C9CED1 7px 8px);background-size:60% 4px,80% 34px;background-position:7px 8px,5px 20px;background-repeat:no-repeat}
+  .resume .label{left:-104px;top:-22px}
+  .linkedin{left:480px;top:644px;width:38px;height:60px;z-index:4}
+  .linkedin .art{position:absolute;left:0;top:0;width:38px;height:60px;transform-origin:8px 0}
+  .string{position:absolute;left:7px;top:0;width:2px;height:16px;background:#C9A040}
+  .ltag{position:absolute;left:-6px;top:14px;width:30px;height:30px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 3px #C9A040,0 3px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:400 18px/1 var(--hand);color:#3B4A73}
+  .linkedin .label{left:34px;top:12px}
+
+  /* motion, only for people who haven't asked for less */
+  @media (prefers-reduced-motion: no-preference){
+    .shelf .tipper{transition:transform .2s}
+    .shelf:hover .tipper,.shelf:focus-visible .tipper{animation:tip .9s cubic-bezier(.3,1.4,.5,1) forwards}
+    @keyframes tip{0%{transform:rotate(-7deg)}45%{transform:rotate(-22deg)}75%{transform:rotate(-15deg)}100%{transform:rotate(-17deg)}}
+    .desk:hover .lamp,.desk:focus-visible .lamp{animation:wobble 1.1s ease-out}
+    @keyframes wobble{0%{transform:rotate(0)}20%{transform:rotate(-5deg)}40%{transform:rotate(3.5deg)}60%{transform:rotate(-2deg)}80%{transform:rotate(1deg)}100%{transform:rotate(0)}}
+    .desk:hover .notebook i:last-child,.desk:focus-visible .notebook i:last-child{animation:flutter .9s ease-out}
+    @keyframes flutter{0%{transform:none}35%{transform:perspective(300px) rotateY(-28deg)}100%{transform:none}}
+    .painting:hover .art,.painting:focus-visible .art{animation:knock 1.2s ease-out forwards}
+    @keyframes knock{0%{transform:rotate(0)}25%{transform:rotate(3deg)}50%{transform:rotate(-1.6deg)}75%{transform:rotate(1.4deg)}100%{transform:rotate(1.2deg)}}
+    .postcard:hover .art,.postcard:focus-visible .art{animation:flap .8s ease-out forwards}
+    @keyframes flap{0%{transform:rotate(5deg)}40%{transform:rotate(-4deg) translateY(-3px)}100%{transform:rotate(-1deg) translateY(-3px)}}
+    .peg:hover .tin,.peg:focus-visible .tin{animation:sway 1.4s ease-in-out}
+    .peg:hover .tin.b,.peg:focus-visible .tin.b{animation-delay:.12s}
+    .peg:hover .tin.c,.peg:focus-visible .tin.c{animation-delay:.22s}
+    .peg:hover .tin.d,.peg:focus-visible .tin.d{animation-delay:.08s}
+    @keyframes sway{0%,100%{rotate:0deg}25%{rotate:4deg}55%{rotate:-3deg}80%{rotate:1.5deg}}
+    .resume .art{transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
+    .resume:hover .art,.resume:focus-visible .art{transform:rotate(-48deg) translateY(-16px)}
+    .linkedin:hover .art,.linkedin:focus-visible .art{animation:swing 1.2s ease-out}
+    @keyframes swing{0%,100%{transform:rotate(0)}20%{transform:rotate(22deg)}45%{transform:rotate(-14deg)}70%{transform:rotate(7deg)}88%{transform:rotate(-3deg)}}
+  }
+</style>
+</head>
+<body>
+<main class="room" aria-label="The study">
+  <div class="floor"></div>
+  <div class="rug" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <h1 class="sign">Your Name</h1>
+
+  <a class="obj shelf" href="books.html" aria-label="Books">
+    <div class="art" aria-hidden="true">
+      <div class="tier"><i class="sp" style="height:96px;background:var(--plum)"></i><i class="sp" style="height:110px;background:var(--moss)"></i><i class="sp" style="height:86px;background:var(--mustard)"></i><i class="sp" style="height:104px;background:var(--navy)"></i><i class="sp" style="height:92px;background:var(--rose)"></i><i class="sp" style="height:112px;background:var(--teal)"></i><i class="sp lean tipper" style="height:98px;background:var(--plum)"></i></div>
+      <div class="tier"><i class="sp" style="height:104px;background:var(--teal)"></i><i class="sp" style="height:90px;background:var(--rose)"></i><i class="sp" style="height:112px;background:var(--navy)"></i><i class="sp" style="height:100px;background:var(--moss)"></i><i class="sp" style="height:88px;background:var(--mustard)"></i><span class="stack"><i style="width:90px;background:var(--plum)"></i><i style="width:80px;background:var(--moss)"></i><i style="width:86px;background:var(--mustard)"></i></span></div>
+      <div class="tier"><i class="sp" style="height:92px;background:var(--mustard)"></i><i class="sp" style="height:110px;background:var(--plum)"></i><i class="sp" style="height:98px;background:var(--teal)"></i><i class="sp" style="height:86px;background:var(--navy)"></i><i class="sp" style="height:106px;background:var(--rose)"></i><i class="sp" style="height:96px;background:var(--moss)"></i><i class="sp" style="height:102px;background:var(--plum)"></i><i class="sp" style="height:90px;background:var(--mustard)"></i></div>
+    </div>
+    <span class="label" aria-hidden="true">Books</span>
+  </a>
+
+  <a class="obj desk" href="writing.html" aria-label="Writing">
+    <div class="art" aria-hidden="true">
+      <div class="lamp"><i class="base"></i><i class="arm"></i><i class="shade"></i><i class="bulb"></i></div>
+      <div class="notebook"><i>On keeping a very small notebook</i><i>lorem ipsum dolor sit amet</i></div>
+      <i class="pen"></i>
+      <div class="tabletop"></div><div class="leg" style="left:28px"></div><div class="leg" style="left:354px"></div>
+    </div>
+    <span class="label" aria-hidden="true">Writing</span>
+  </a>
+
+  <a class="obj painting" href="https://art.example.com" aria-label="My art site (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><i class="wire"></i><i class="nail"></i><div class="canvas"><div class="scene"></div></div></div>
+    <span class="label" aria-hidden="true">Art site</span>
+  </a>
+
+  <a class="obj postcard" href="https://www.instagram.com/your-handle" aria-label="My paintings on Instagram (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><div class="polaroid"><div></div></div><i class="tape"></i></div>
+    <span class="label" aria-hidden="true">art instagram</span>
+  </a>
+
+  <a class="obj peg" href="projects.html" aria-label="Projects">
+    <div class="art" aria-hidden="true">
+      <div class="board"></div>
+      <i class="hook" style="left:78px;top:24px"></i><i class="hook" style="left:212px;top:28px"></i><i class="hook" style="left:70px;top:134px"></i><i class="hook" style="left:196px;top:136px"></i>
+      <div class="tin a"><span>Agent fleet</span></div>
+      <div class="tin b"><span>Painting app</span></div>
+      <div class="tin c"><span>Lorem kit</span></div><div class="tin d"><span>Ipsum tool</span></div>
+      <i class="tool"></i>
+    </div>
+    <span class="label" aria-hidden="true">Projects</span>
+  </a>
+
+  <div class="bag" aria-hidden="true"><i class="strap"></i><i class="inside"></i><i class="body"></i><i class="lip"></i><i class="stitch"></i><i class="tab"></i><i class="ring" style="left:5px"></i><i class="ring" style="left:106px"></i></div>
+  <a class="obj resume" href="resume.pdf" aria-label="My résumé (PDF)">
+    <div class="art" aria-hidden="true"></div>
+    <span class="label" aria-hidden="true">Résumé</span>
+  </a>
+  <a class="obj linkedin" href="https://www.linkedin.com/in/your-name" aria-label="LinkedIn (opens in a new tab)" target="_blank" rel="noopener">
+    <div class="art" aria-hidden="true"><i class="string"></i><span class="ltag">in</span></div>
+    <span class="label" aria-hidden="true">LinkedIn</span>
+  </a>
+</main>
+</body>
+</html>

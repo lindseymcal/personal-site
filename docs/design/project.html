@@ -1,0 +1,86 @@
+<!-- Core idea: Inside the tin, a plain spec sheet: four facts in a row, a picture, and three short sections, so an employer gets the whole project in thirty seconds. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="Inside the tin, a plain spec sheet: four facts in a row, a picture, and three short sections, so an employer gets the whole project in thirty seconds.">
+<title>Agent fleet, Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--glow:#F5CE7A;--paper:#F4EAD5;--ink:#2A2620;--pencil:#5A544B;--brass:#B98B4A;--plum:#7A4C6B;--moss:#6F8A5B;--mustard:#C9A040;--rule:#D9CBAE;
+    --hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:17px/1.6 var(--body);color:var(--ink);min-height:100vh;padding:56px 0 80px;
+    background-color:#C8A77E;background-image:linear-gradient(rgba(35,42,64,.55),rgba(35,42,64,.55)),radial-gradient(circle,#8C6E48 3px,transparent 3.8px);background-size:auto,34px 34px;background-attachment:fixed}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:4px;border-radius:4px}
+  .way{position:fixed;left:28px;top:24px;display:flex;flex-direction:column;gap:14px;align-items:center;z-index:10}
+  .home{position:relative;display:block;width:84px;height:84px;border-radius:50%;border:6px solid var(--brass);overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.45);
+    background:radial-gradient(circle at 58% 62%,rgba(245,206,122,.55),rgba(245,206,122,0) 55%),linear-gradient(#2F3752,#232A40);transition:filter .3s}
+  .home i{position:absolute;display:block}
+  .home .s1{left:12px;bottom:18px;width:6px;height:26px;background:var(--plum)}
+  .home .s2{left:19px;bottom:18px;width:6px;height:31px;background:var(--moss)}
+  .home .s3{left:26px;bottom:18px;width:6px;height:24px;background:var(--mustard)}
+  .home .fl{left:0;right:0;bottom:0;height:18px;background:#4B311F}
+  .home .sh{left:44px;top:24px;width:26px;height:16px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
+  .home .ar{left:52px;top:38px;width:3px;height:22px;background:#222}
+  .home:hover,.home:focus-visible{filter:brightness(1.25) drop-shadow(0 0 10px rgba(245,206,122,.6))}
+  .tinlink{display:block;width:54px;height:42px;border-radius:6px;background:linear-gradient(#9DB0BC,#7E929E);box-shadow:0 4px 8px rgba(0,0,0,.4);position:relative}
+  .tinlink::after{content:"";position:absolute;left:8px;right:8px;top:9px;height:14px;background:var(--paper);border-radius:2px}
+  @media (prefers-reduced-motion: no-preference){.tinlink{transition:transform .3s}.tinlink:hover,.tinlink:focus-visible{transform:rotate(-8deg) translateY(-3px)}}
+
+  .sheet{width:900px;margin:0 auto;background:#FFFDF6;border-radius:6px;padding:56px 64px 54px;box-shadow:0 22px 40px rgba(0,0,0,.45)}
+  h1{font:400 58px/1 var(--hand)}
+  .what{font-size:20px;line-height:1.5;max-width:56ch;margin:12px 0 28px;color:#3A352E}
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);margin-bottom:26px}
+  .facts div{padding:14px 18px 14px 0}
+  .facts dt{font-size:14px;color:var(--pencil)}
+  .facts dd{font-weight:700;font-size:16.5px;line-height:1.35}
+  .acts{display:flex;gap:12px;margin-bottom:34px}
+  .btn{display:inline-block;font:700 16px/1 var(--body);text-decoration:none;padding:13px 20px;border-radius:999px;background:var(--wall);color:var(--paper)}
+  .btn.line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+  .shot{height:330px;border-radius:8px;margin-bottom:36px;position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1);
+    background:radial-gradient(ellipse 260px 160px at 50% 50%,rgba(245,206,122,.35),transparent 70%),linear-gradient(#2F3752 0 68%,#5A3A25 68%)}
+  .shot i{position:absolute;display:block;border-radius:50%}
+  .shot .rug{left:270px;top:230px;width:310px;height:70px;background:#8E5A4A}
+  .shot .rug b{position:absolute;display:block;border-radius:50%}
+  .shot .rug b:nth-child(1){left:8%;right:8%;top:6.7%;bottom:9.3%;background:#5F6E52}
+  .shot .rug b:nth-child(2){left:18%;right:18%;top:15%;bottom:21%;background:#C9A26A}
+  .shot .rug b:nth-child(3){left:30%;right:30%;top:25%;bottom:35%;background:#8E5A4A}
+  .shot .p1{left:330px;top:200px;width:40px;height:36px;background:#E7E1D4}
+  .shot .p2{left:400px;top:196px;width:44px;height:40px;background:#C9A040}
+  .shot .p3{left:470px;top:202px;width:40px;height:34px;background:#9DB0BC}
+  .shot .board{left:310px;top:50px;width:230px;height:100px;border-radius:6px;background:#2E3B33;box-shadow:0 0 0 8px #7B5236}
+  .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
+  h2{font:400 28px/1.1 var(--hand);margin-bottom:8px}
+  .cols p{font-size:16px;line-height:1.6;color:#3A352E}
+  .cols ul{margin-left:1.1em;font-size:16px;color:#3A352E}
+</style>
+</head>
+<body>
+<nav class="way" aria-label="Way back">
+  <a class="home" href="home.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>
+  <a class="tinlink" href="projects.html" aria-label="All projects"></a>
+</nav>
+<main class="sheet">
+  <h1>Agent fleet</h1>
+  <p class="what">A small team of AI helpers that plan, build, test and review code together, kept in line by guardrail hooks, with a cozy pet room that shows who is doing what.</p>
+  <dl class="facts">
+    <div><dt>Role</dt><dd>Designer and builder</dd></div>
+    <div><dt>When</dt><dd>2026, ongoing</dd></div>
+    <div><dt>Built with</dt><dd>Node, Slack, agent hooks</dd></div>
+    <div><dt>Status</dt><dd>In daily use</dd></div>
+  </dl>
+  <div class="acts"><a class="btn" href="#">See it working</a><a class="btn line" href="#">Source code</a></div>
+  <div class="shot" role="img" aria-label="Placeholder screenshot of the pet room"><i class="board"></i><i class="rug"><b></b><b></b><b></b></i><i class="p1"></i><i class="p2"></i><i class="p3"></i></div>
+  <div class="cols">
+    <section><h2>The problem</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.</p></section>
+    <section><h2>What I built</h2><ul><li>Lorem ipsum dolor sit amet</li><li>Consectetur adipiscing elit</li><li>Sed do eiusmod tempor</li></ul></section>
+    <section><h2>What I learned</h2><p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo.</p></section>
+  </div>
+</main>
+</body>
+</html>

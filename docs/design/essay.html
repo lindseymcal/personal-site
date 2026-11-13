@@ -1,0 +1,83 @@
+<!-- Core idea: One page lifted out of the notebook and laid under the lamp: easy to read, with Substack as a quiet envelope at the end. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="One page lifted out of the notebook and laid under the lamp: easy to read, with Substack as a quiet envelope at the end.">
+<title>On keeping a very small notebook, Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--glow:#F5CE7A;--wood:#7B5236;--wood-dk:#553723;--paper:#F4EAD5;--ink:#2A2620;--pencil:#5A544B;--blue-ink:#2E2A9A;--red-pencil:#9A4040;--brass:#B98B4A;
+    --plum:#7A4C6B;--moss:#6F8A5B;--mustard:#C9A040;--rose:#B7837A;--hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:19px/1.7 var(--body);color:var(--ink);min-height:100vh;padding:64px 0 90px;
+    background:radial-gradient(ellipse 900px 600px at 50% 0,rgba(245,206,122,.30),rgba(245,206,122,0) 70%),repeating-linear-gradient(90deg,#6E4A31 0 150px,#74503A 150px 152px,#6B472E 152px 300px);background-attachment:fixed}
+  a{color:inherit}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:4px;border-radius:4px}
+
+  .way{position:fixed;left:28px;top:24px;display:flex;flex-direction:column;gap:14px;align-items:center;z-index:10}
+  .home{position:relative;display:block;width:84px;height:84px;border-radius:50%;border:6px solid var(--brass);overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.45);
+    background:radial-gradient(circle at 58% 62%,rgba(245,206,122,.55),rgba(245,206,122,0) 55%),linear-gradient(#2F3752,#232A40);transition:filter .3s}
+  .home i{position:absolute;display:block}
+  .home .s1{left:12px;bottom:18px;width:6px;height:26px;background:var(--plum)}
+  .home .s2{left:19px;bottom:18px;width:6px;height:31px;background:var(--moss)}
+  .home .s3{left:26px;bottom:18px;width:6px;height:24px;background:var(--mustard)}
+  .home .fl{left:0;right:0;bottom:0;height:18px;background:#4B311F}
+  .home .sh{left:44px;top:24px;width:26px;height:16px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
+  .home .ar{left:52px;top:38px;width:3px;height:22px;background:#222}
+  .home:hover,.home:focus-visible{filter:brightness(1.25) drop-shadow(0 0 10px rgba(245,206,122,.6))}
+  .nb{display:block;width:44px;height:56px;border-radius:3px 6px 6px 3px;background:#2E4A63;box-shadow:inset 6px 0 0 rgba(0,0,0,.25),0 4px 8px rgba(0,0,0,.4);position:relative}
+  .nb::after{content:"";position:absolute;right:-3px;top:4px;bottom:4px;width:4px;background:var(--paper);border-radius:0 2px 2px 0}
+  .nb::before{content:"";position:absolute;left:16px;top:0;bottom:0;width:4px;background:var(--rose)}
+
+  .sheet{position:relative;width:760px;margin:0 auto;padding:72px 84px 64px;background:radial-gradient(ellipse at 30% 10%,rgba(255,255,255,.4),rgba(255,255,255,0) 50%),var(--paper);border-radius:4px;box-shadow:0 22px 40px rgba(0,0,0,.45);transform:rotate(.3deg)}
+  .sheet::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:radial-gradient(circle at 0 10px,transparent 4px,var(--paper) 4.5px) 0 0/10px 22px repeat-y}
+  h1{font:400 54px/1.04 var(--hand);color:var(--ink);margin-bottom:10px}
+  .when{font:400 22px/1 var(--hand);color:var(--red-pencil);margin-bottom:34px}
+  p{margin-bottom:22px;max-width:64ch}
+  .lede{font-size:21px}
+  h2{font:400 32px/1.1 var(--hand);margin:38px 0 12px}
+  blockquote{font:400 30px/1.25 var(--hand);color:var(--blue-ink);margin:32px 0;padding-left:24px;border-left:3px solid rgba(46,42,154,.35)}
+  .fig{height:220px;margin:28px 0;border:10px solid #FFFDF6;box-shadow:0 4px 10px rgba(0,0,0,.2);transform:rotate(-1deg);
+    background:radial-gradient(circle at 70% 30%,#F2D58A 0 9%,transparent 10%),linear-gradient(#9FC6DF 0 50%,#9BA89C 50% 72%,#5F7C99 72%)}
+  .end{display:flex;align-items:center;gap:16px;margin-top:46px;padding-top:26px;border-top:1.5px dashed #D3C4A4;font-size:16px;color:var(--pencil)}
+  .end a{display:flex;align-items:center;gap:14px;text-decoration:none}
+  .end a span{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+  .env{position:relative;flex:none;width:56px;height:36px;background:#FFF8E6;border-radius:3px;box-shadow:0 3px 6px rgba(0,0,0,.2)}
+  .env::before{content:"";position:absolute;inset:0 0 40% 0;background:#F3E5C4;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top}
+  .env::after{content:"";position:absolute;right:5px;top:5px;width:10px;height:12px;background:var(--rose)}
+  @media (prefers-reduced-motion: no-preference){
+    .env::before{transition:transform .4s cubic-bezier(.3,1.4,.5,1)}
+    .end a:hover .env::before,.end a:focus-visible .env::before{transform:rotateX(160deg)}
+    .nb{transition:transform .3s}
+    .nb:hover,.nb:focus-visible{transform:rotate(-8deg)}
+  }
+</style>
+</head>
+<body>
+<nav class="way" aria-label="Way back">
+  <a class="home" href="home.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>
+  <a class="nb" href="writing.html" aria-label="All writing"></a>
+</nav>
+<main>
+  <article class="sheet">
+    <h1>On keeping a very small notebook</h1>
+    <p class="when">October 30, 2026</p>
+    <p class="lede">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <blockquote>Sed ut perspiciatis unde omnis iste natus error sit voluptatem.</blockquote>
+    <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+    <h2>Lorem ipsum, again</h2>
+    <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+    <div class="fig" role="img" aria-label="Placeholder for an image in the essay"></div>
+    <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.</p>
+    <footer class="end">
+      <a href="https://your-name.substack.com/subscribe" target="_blank" rel="noopener"><i class="env" aria-hidden="true"></i><span>Get the next one by email, on Substack</span></a>
+    </footer>
+  </article>
+</main>
+</body>
+</html>

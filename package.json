@@ -1,0 +1,13 @@
+{
+  "name": "personal-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Zee's personal site: a lamplit study where every object is a doorway.",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/build.mjs",
+    "build:sample": "node scripts/build.mjs tests/fixtures/sample-goodreads.csv",
+    "serve": "python3 -m http.server 8080 --bind 127.0.0.1"
+  }
+}

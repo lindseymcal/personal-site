@@ -1,0 +1,70 @@
+<!-- Core idea: Step up to the pegboard: each project is a labeled tin on its own hook, and lifting one off opens a plain page an employer can scan. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="Step up to the pegboard: each project is a labeled tin on its own hook, and lifting one off opens a plain page an employer can scan.">
+<title>Projects, Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--glow:#F5CE7A;--wood-dk:#553723;--paper:#F4EAD5;--ink:#2A2620;--pencil:#5A544B;--brass:#B98B4A;--plum:#7A4C6B;--moss:#6F8A5B;--mustard:#C9A040;
+    --hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--wall-deep)}
+  body{font:17px/1.5 var(--body);color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:5px;border-radius:8px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .stage{position:relative;width:1280px;height:800px;margin:0 auto;overflow:hidden;background:linear-gradient(var(--wall),var(--wall-deep))}
+  .home{position:absolute;left:28px;top:24px;width:84px;height:84px;border-radius:50%;border:6px solid var(--brass);overflow:hidden;z-index:10;box-shadow:0 6px 14px rgba(0,0,0,.45);
+    background:radial-gradient(circle at 58% 62%,rgba(245,206,122,.55),rgba(245,206,122,0) 55%),linear-gradient(#2F3752,#232A40);transition:filter .3s}
+  .home i{position:absolute;display:block}
+  .home .s1{left:12px;bottom:18px;width:6px;height:26px;background:var(--plum)}
+  .home .s2{left:19px;bottom:18px;width:6px;height:31px;background:var(--moss)}
+  .home .s3{left:26px;bottom:18px;width:6px;height:24px;background:var(--mustard)}
+  .home .fl{left:0;right:0;bottom:0;height:18px;background:#4B311F}
+  .home .sh{left:44px;top:24px;width:26px;height:16px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
+  .home .ar{left:52px;top:38px;width:3px;height:22px;background:#222}
+  .home:hover,.home:focus-visible{filter:brightness(1.25) drop-shadow(0 0 10px rgba(245,206,122,.6))}
+
+  .board{position:absolute;left:150px;top:40px;width:1080px;height:720px;background-color:#C8A77E;background-image:radial-gradient(circle,#8C6E48 3px,transparent 3.8px);background-size:34px 34px;background-position:17px 17px;border:16px solid #A98758;box-shadow:0 16px 34px rgba(0,0,0,.45)}
+  .hook{position:absolute;width:10px;height:28px;background:#4A4A4A;border-radius:5px;box-shadow:2px 3px 3px rgba(0,0,0,.3)}
+  .tin{position:absolute;display:block;width:300px;height:230px;border-radius:12px;padding:22px;box-shadow:0 10px 16px rgba(0,0,0,.35),inset 0 10px 0 rgba(255,255,255,.12),inset 0 -12px 0 rgba(0,0,0,.12);transform-origin:50% -20px}
+  .tin .lbl{display:block;background:var(--paper);border-radius:5px;padding:14px 16px;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+  .tin b{display:block;font:400 34px/1 var(--hand)}
+  .tin small{display:block;font-size:15px;color:var(--pencil);margin-top:6px}
+  .tin .peek{position:absolute;left:30px;right:30px;top:-18px;height:24px;border-radius:4px 4px 0 0;z-index:-1}
+  .t1{left:110px;top:90px;background:linear-gradient(#9DB0BC,#7E929E);rotate:-1.5deg}
+  .t2{left:500px;top:100px;background:linear-gradient(#C9A040,#A98330);rotate:1.5deg}
+  .t3{left:110px;top:400px;background:linear-gradient(#8E9A77,#6F7B5B);rotate:1deg}
+  .t4{left:500px;top:410px;background:linear-gradient(#B7837A,#98665E);rotate:-1deg}
+  .tool{position:absolute;border-radius:6px;box-shadow:3px 4px 4px rgba(0,0,0,.3)}
+  .ruler{left:900px;top:90px;width:34px;height:300px;background:repeating-linear-gradient(#E3C98E 0 14px,#3A2A14 14px 15px),#E3C98E;background-size:40% 15px,100%;background-repeat:repeat-y,no-repeat}
+  .scissors{left:960px;top:110px;width:70px;height:70px;border-radius:50%;border:8px solid #3F7A7A;background:transparent;box-shadow:none}
+  .tape-roll{left:930px;top:460px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#C8A77E 0 30%,#E7D7AE 31% 60%,#CDB88A 61%)}
+  .string{left:960px;top:600px;width:60px;height:60px;border-radius:50%;background:repeating-radial-gradient(circle,#B7837A 0 3px,#9D6A62 3px 5px)}
+  @media (prefers-reduced-motion: no-preference){
+    .tin{transition:transform .35s cubic-bezier(.3,1.5,.5,1),box-shadow .35s}
+    .tin:hover,.tin:focus-visible{transform:translateY(-12px) rotate(-2deg);box-shadow:0 22px 26px rgba(0,0,0,.4),inset 0 10px 0 rgba(255,255,255,.12),inset 0 -12px 0 rgba(0,0,0,.12)}
+  }
+  .tin:hover,.tin:focus-visible{filter:brightness(1.07)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <a class="home" href="home.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>
+  <main class="board">
+    <h1 class="sr">Projects</h1>
+    <i class="hook" style="left:255px;top:62px"></i><i class="hook" style="left:645px;top:72px"></i><i class="hook" style="left:255px;top:372px"></i><i class="hook" style="left:645px;top:382px"></i>
+    <a class="tin t1" href="project.html"><span class="lbl"><b>Agent fleet</b><small>AI helpers that build, test and review code</small></span></a>
+    <a class="tin t2" href="project.html"><span class="lbl"><b>Painting app</b><small>Color and value finder for painting outdoors</small></span></a>
+    <a class="tin t3" href="project.html"><span class="lbl"><b>Lorem kit</b><small>Lorem ipsum dolor sit amet</small></span></a>
+    <a class="tin t4" href="project.html"><span class="lbl"><b>Ipsum tool</b><small>Consectetur adipiscing elit</small></span></a>
+    <i class="tool ruler" aria-hidden="true"></i><i class="tool scissors" aria-hidden="true"></i><i class="tool tape-roll" aria-hidden="true"></i><i class="tool string" aria-hidden="true"></i>
+  </main>
+</div>
+</body>
+</html>

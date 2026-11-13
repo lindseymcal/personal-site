@@ -1,0 +1,206 @@
+<!-- Core idea: A wall of real-looking books, one spine per book from your Goodreads shelf; pull one out and it comes forward with your rating, your review if you wrote one, and any note about who recommended it. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="core-idea" content="A wall of real-looking books, one spine per book from your Goodreads shelf; pull one out and it comes forward with your rating, your review if you wrote one, and any note about who recommended it.">
+<title>Books, Your Name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Patrick+Hand&family=Cinzel:wght@500&family=IM+Fell+English+SC&family=Josefin+Sans:wght@600&family=Libre+Baskerville&family=Playfair+Display+SC:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{--wall:#2F3752;--wall-deep:#232A40;--glow:#F5CE7A;--wood:#7B5236;--wood-dk:#4A2F1E;--paper:#F4EAD5;--ink:#2A2620;--pencil:#5A544B;--blue-ink:#2E2A9A;--red-pencil:#9A4040;--brass:#B98B4A;
+    --plum:#7A4C6B;--moss:#6F8A5B;--mustard:#C9A040;--rose:#B7837A;
+    --hand:"Patrick Hand",cursive;--body:Andika,system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--wall-deep)}
+  body{font:17px/1.5 var(--body);color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:3px solid var(--glow);outline-offset:3px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  .stage{position:relative;width:1280px;height:800px;margin:0 auto;overflow:hidden;
+    background:radial-gradient(ellipse 620px 420px at 640px 120px,rgba(245,206,122,.22),rgba(245,206,122,0) 70%),linear-gradient(var(--wall),var(--wall-deep))}
+
+  .home{position:absolute;left:28px;top:24px;width:84px;height:84px;border-radius:50%;border:6px solid var(--brass);overflow:hidden;z-index:10;box-shadow:0 6px 14px rgba(0,0,0,.45);
+    background:radial-gradient(circle at 58% 62%,rgba(245,206,122,.55),rgba(245,206,122,0) 55%),linear-gradient(#2F3752,#232A40);transition:filter .3s}
+  .home i{position:absolute;display:block}
+  .home .s1{left:12px;bottom:18px;width:6px;height:26px;background:var(--plum)}
+  .home .s2{left:19px;bottom:18px;width:6px;height:31px;background:var(--moss)}
+  .home .s3{left:26px;bottom:18px;width:6px;height:24px;background:var(--mustard)}
+  .home .fl{left:0;right:0;bottom:0;height:18px;background:#4B311F}
+  .home .sh{left:44px;top:24px;width:26px;height:16px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
+  .home .ar{left:52px;top:38px;width:3px;height:22px;background:#222}
+  .home:hover,.home:focus-visible{filter:brightness(1.25) drop-shadow(0 0 10px rgba(245,206,122,.6))}
+
+  /* the shelf */
+  .case{position:absolute;left:150px;top:34px;width:1090px;height:740px;background:var(--wood-dk);border:18px solid var(--wood);border-bottom-width:26px;display:grid;grid-template-rows:1fr 1fr;box-shadow:0 14px 30px rgba(0,0,0,.45)}
+  .tier{position:relative;display:flex;align-items:flex-end;gap:3px;padding:0 16px;border-bottom:14px solid var(--wood);box-shadow:inset 0 -18px 22px rgba(0,0,0,.28),inset 0 22px 26px -10px rgba(0,0,0,.4)}
+  .tier:last-child{border-bottom:0}
+  .plate{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);background:linear-gradient(#D8B36E,#A98247);color:#3A2A14;font:400 15px/1 var(--hand);padding:2px 12px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4);z-index:2}
+  .tier:last-child .plate{bottom:-22px}
+
+  .spine{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 0 12px;
+    width:var(--w);height:var(--h);background-color:var(--c);color:var(--t);font-family:var(--f);border-radius:3px 3px 1px 1px;
+    background-image:linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(var(--band,transparent),var(--band,transparent)),linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 30%,rgba(0,0,0,0) 55%,rgba(0,0,0,.2));
+    background-size:100% 2px,100% 2px,100% 100%;background-position:0 10px,0 calc(100% - 40px),0 0;background-repeat:no-repeat;
+    box-shadow:0 0 0 1px rgba(0,0,0,.15);transition:filter .25s}
+  .spine .t{writing-mode:vertical-rl;transform:rotate(180deg);font-size:var(--fs,15px);line-height:1;white-space:nowrap;letter-spacing:.02em}
+  .spine .a{font:400 9.5px/1.1 var(--body);opacity:.85;text-align:center;max-width:90%}
+  /* favorites: a gold-foil star stamped near the top of the spine, set by you */
+  .foil{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#FFF1B8 0,#E0B44E 35%,#9C7424 55%,#F2D27A 75%,#C9A040 100%);
+    clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);filter:drop-shadow(0 0 1px rgba(0,0,0,.4))}
+  .spine.is-fav{padding-top:12px}
+  .spine.is-fav .foil{margin-bottom:6px}
+  .foil.big{width:26px;height:26px;vertical-align:4px;margin-left:8px}
+  .book .foil{position:absolute;left:50%;top:22px;width:22px;height:22px;margin-left:-6px}
+  .spine:hover,.spine:focus-visible{filter:brightness(1.12) drop-shadow(0 0 10px rgba(245,206,122,.45))}
+  .lean{transform:rotate(-6deg);transform-origin:bottom left;margin-left:10px}
+  .bookend{flex:none;width:18px;height:120px;background:#3A3A3A;border-radius:3px 3px 0 0;margin-left:6px}
+  .plant{flex:none;margin-left:auto;width:90px;height:110px;position:relative}
+  .plant::before{content:"";position:absolute;left:22px;bottom:0;width:46px;height:44px;background:#A95E44;border-radius:3px 3px 10px 10px}
+  .plant::after{content:"";position:absolute;left:8px;bottom:40px;width:74px;height:66px;background:radial-gradient(circle at 30% 60%,#6F8A5B 0 28%,transparent 29%),radial-gradient(circle at 65% 45%,#5D7A4B 0 30%,transparent 31%),radial-gradient(circle at 50% 20%,#7E9A66 0 24%,transparent 25%)}
+
+  /* a gap glows where the pulled-out book was */
+  .stage:not(:has(.pull:target)):not(:target) .s-persuasion,
+  .stage:has(#b-persuasion:target) .s-persuasion,.stage:has(#b-walden:target) .s-walden,
+  .stage:has(#b-moby:target) .s-moby,.stage:has(#b-middlemarch:target) .s-middlemarch
+    {background:transparent!important;background-image:none!important;box-shadow:inset 0 0 0 2px rgba(245,206,122,.55),inset 0 0 22px rgba(245,206,122,.25)}
+  .stage:not(:has(.pull:target)):not(:target) .s-persuasion > *,
+  .stage:has(#b-persuasion:target) .s-persuasion > *,.stage:has(#b-walden:target) .s-walden > *,
+  .stage:has(#b-moby:target) .s-moby > *,.stage:has(#b-middlemarch:target) .s-middlemarch > *{visibility:hidden}
+
+  /* pulled-out books: CSS :target, no script */
+  .pull{display:none;position:absolute;inset:0;z-index:20}
+  .pull:target,.stage:not(:has(.pull:target)):not(:target) .pull.first{display:block}
+  .scrim{position:absolute;inset:0;background:rgba(18,21,34,.62);cursor:default}
+  .book{position:absolute;left:250px;top:186px;width:250px;height:372px;border-radius:3px 8px 8px 3px;padding:34px 26px;transform:rotate(-5deg);
+    box-shadow:inset 12px 0 0 rgba(0,0,0,.2),inset 14px 0 0 rgba(255,255,255,.08),0 24px 40px rgba(0,0,0,.6);display:flex;flex-direction:column;justify-content:space-between;text-align:center}
+  .book .frame{position:absolute;inset:16px 14px 16px 24px;border:1.5px solid currentColor;opacity:.55;border-radius:2px}
+  .book b{font-weight:400;font-size:34px;line-height:1.05;position:relative}
+  .book span{font:400 14px/1.2 var(--body);position:relative;opacity:.9}
+  .slip{position:absolute;left:372px;top:92px;width:118px;height:140px;background:#FFF8E6;transform:rotate(7deg);box-shadow:0 3px 8px rgba(0,0,0,.35);padding:12px 12px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+  .slip i{display:block;font:400 19px/1.05 var(--hand);font-style:normal;color:var(--blue-ink)}
+  .pull .book{z-index:2}
+  .letter{position:absolute;left:580px;top:92px;width:560px;max-height:620px;overflow:auto;background:radial-gradient(ellipse at 20% 0,rgba(255,255,255,.45),rgba(255,255,255,0) 50%),var(--paper);border-radius:4px;padding:40px 46px 34px;box-shadow:0 22px 40px rgba(0,0,0,.55);transform:rotate(.6deg)}
+  .letter h2{font:400 42px/1 var(--hand)}
+  .by{color:var(--pencil);font-size:16px;margin:4px 0 16px}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .dots{display:flex;gap:7px}
+  .dots i{display:block;width:17px;height:17px;border-radius:52% 46% 55% 44%;background:var(--blue-ink);box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
+  .dots i.o{background:transparent;box-shadow:inset 0 0 0 2px rgba(90,84,75,.55)}
+  .when{font:400 21px/1 var(--hand);color:var(--red-pencil)}
+  .letter p{font-size:17px;line-height:1.68;margin-bottom:14px}
+  .card{position:absolute;left:590px;top:250px;width:420px;background:#FFFDF6;border-radius:4px;padding:28px 32px 26px;box-shadow:0 22px 40px rgba(0,0,0,.55);transform:rotate(1.4deg);
+    background-image:linear-gradient(#C46D6D,#C46D6D);background-size:100% 2px;background-position:0 78px;background-repeat:no-repeat}
+  .card h2{font:400 36px/1 var(--hand);margin-bottom:24px}
+  .card .by{margin:0 0 14px}
+  .card .row{margin:0}
+
+  @media (prefers-reduced-motion: no-preference){
+    .spine{transition:filter .25s,transform .3s cubic-bezier(.3,1.5,.5,1)}
+    .spine:not(.lean):hover,.spine:not(.lean):focus-visible{transform:translateY(-14px)}
+    .pull:target .book,.pull.first .book{animation:out .6s cubic-bezier(.2,1.2,.4,1) both}
+    .pull:target .letter,.pull:target .card,.pull.first .letter{animation:fade .5s .2s ease-out both}
+    @keyframes out{from{transform:translate(120px,-40px) rotate(0) scale(.6);opacity:0}to{transform:rotate(-5deg)}}
+    @keyframes fade{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="shelf">
+  <a class="home" href="home.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>
+  <main>
+    <h1 class="sr">Books</h1>
+    <div class="case">
+      <div class="tier" aria-label="Read in 2026">
+        <a class="spine s-middlemarch is-fav" href="#b-middlemarch" aria-label="Middlemarch, George Eliot, a favorite" style="--w:58px;--h:286px;--c:#2E3F66;--t:#EFE3C6;--band:#C9A86A;--f:'Libre Baskerville';--fs:17px"><i class="foil" aria-hidden="true"></i><span class="t">Middlemarch</span><span class="a">Eliot</span></a>
+        <a class="spine s-persuasion is-fav" href="#b-persuasion" aria-label="Persuasion, Jane Austen, a favorite" style="--w:42px;--h:250px;--c:#8C5A78;--t:#F6E9EF;--f:'Playfair Display SC'"><i class="foil" aria-hidden="true"></i><span class="t">Persuasion</span><span class="a">Austen</span></a>
+        <a class="spine s-walden" href="#b-walden" aria-label="Walden, Henry David Thoreau" style="--w:40px;--h:236px;--c:#7C9064;--t:#FDF8EA;--f:'Josefin Sans';--fs:14px"><span class="t">WALDEN</span><span class="a">Thoreau</span></a>
+        <a class="spine is-fav" href="#b-walden" aria-label="My Ántonia, Willa Cather, a favorite" style="--w:46px;--h:262px;--c:#A8452F;--t:#F6E7CF;--band:#F6E7CF;--f:'Libre Baskerville'"><i class="foil" aria-hidden="true"></i><span class="t">My Ántonia</span><span class="a">Cather</span></a>
+        <a class="spine s-moby is-fav" href="#b-moby" aria-label="Moby-Dick, Herman Melville, a favorite" style="--w:64px;--h:298px;--c:#24474F;--t:#E8E0C8;--band:#C9A86A;--f:'IM Fell English SC';--fs:19px"><i class="foil" aria-hidden="true"></i><span class="t">Moby-Dick</span><span class="a">Melville</span></a>
+        <a class="spine" href="#b-middlemarch" aria-label="North and South, Elizabeth Gaskell" style="--w:44px;--h:258px;--c:#B4776C;--t:#FFF5EC;--f:'Cinzel';--fs:13px"><span class="t">North and South</span><span class="a">Gaskell</span></a>
+        <a class="spine" href="#b-moby" aria-label="Frankenstein, Mary Shelley" style="--w:40px;--h:244px;--c:#1F2430;--t:#D7DBC9;--band:#7E8D6A;--f:'IM Fell English SC'"><span class="t">Frankenstein</span><span class="a">Shelley</span></a>
+        <a class="spine" href="#b-persuasion" aria-label="Jane Eyre, Charlotte Brontë" style="--w:50px;--h:270px;--c:#6E2E35;--t:#F2DFC4;--band:#C9A86A;--f:'Playfair Display SC';--fs:16px"><span class="t">Jane Eyre</span><span class="a">Brontë</span></a>
+        <a class="spine" href="#b-walden" aria-label="The Age of Innocence, Edith Wharton" style="--w:46px;--h:266px;--c:#E7DCC0;--t:#3B3A55;--band:#3B3A55;--f:'Cinzel';--fs:12.5px"><span class="t">The Age of Innocence</span><span class="a">Wharton</span></a>
+        <a class="spine" href="#b-middlemarch" aria-label="Silas Marner, George Eliot" style="--w:34px;--h:228px;--c:#5D6E7E;--t:#F4EEE0;--f:'Libre Baskerville';--fs:13px"><span class="t">Silas Marner</span><span class="a">Eliot</span></a>
+        <a class="spine" href="#b-persuasion" aria-label="Emma, Jane Austen" style="--w:44px;--h:250px;--c:#A9B6A2;--t:#2B3329;--band:#2B3329;--f:'Playfair Display SC';--fs:18px"><span class="t">Emma</span><span class="a">Austen</span></a>
+        <a class="spine" href="#b-moby" aria-label="Bleak House, Charles Dickens" style="--w:62px;--h:292px;--c:#3E3A2E;--t:#E3C986;--band:#E3C986;--f:'IM Fell English SC';--fs:18px"><span class="t">Bleak House</span><span class="a">Dickens</span></a>
+        <a class="spine" href="#b-walden" aria-label="The Awakening, Kate Chopin" style="--w:32px;--h:226px;--c:#5E8FA0;--t:#FFFFFF;--f:'Josefin Sans';--fs:12px"><span class="t">THE AWAKENING</span><span class="a">Chopin</span></a>
+        <a class="spine lean" href="#b-middlemarch" aria-label="Cranford, Elizabeth Gaskell" style="--w:38px;--h:236px;--c:#C98E5A;--t:#2E2014;--f:'Cinzel';--fs:14px"><span class="t">Cranford</span><span class="a">Gaskell</span></a>
+        <span class="plant" aria-hidden="true"></span>
+        <span class="plate" aria-hidden="true">2026</span>
+      </div>
+      <div class="tier" aria-label="Read in 2025">
+        <a class="spine" href="#b-walden" aria-label="Mrs Dalloway, Virginia Woolf" style="--w:40px;--h:252px;--c:#E2B9A8;--t:#3D2A2A;--f:'Josefin Sans';--fs:14px"><span class="t">MRS DALLOWAY</span><span class="a">Woolf</span></a>
+        <a class="spine" href="#b-middlemarch" aria-label="The Souls of Black Folk, W. E. B. Du Bois" style="--w:44px;--h:270px;--c:#1E3B34;--t:#E6D9AE;--band:#E6D9AE;--f:'Cinzel';--fs:12px"><span class="t">The Souls of Black Folk</span><span class="a">Du Bois</span></a>
+        <a class="spine" href="#b-persuasion" aria-label="Little Women, Louisa May Alcott" style="--w:52px;--h:262px;--c:#9D4E5C;--t:#FBEFDA;--band:#E7C58A;--f:'Playfair Display SC';--fs:15px"><span class="t">Little Women</span><span class="a">Alcott</span></a>
+        <a class="spine" href="#b-moby" aria-label="Wuthering Heights, Emily Brontë" style="--w:42px;--h:258px;--c:#4A4F5E;--t:#E5E1D4;--f:'IM Fell English SC';--fs:15px"><span class="t">Wuthering Heights</span><span class="a">Brontë</span></a>
+        <a class="spine" href="#b-moby" aria-label="Great Expectations, Charles Dickens" style="--w:58px;--h:286px;--c:#7A3B2A;--t:#EED7A8;--band:#EED7A8;--f:'Libre Baskerville';--fs:14px"><span class="t">Great Expectations</span><span class="a">Dickens</span></a>
+        <a class="spine" href="#b-walden" aria-label="The Moonstone, Wilkie Collins" style="--w:48px;--h:248px;--c:#D8CDB0;--t:#2C3447;--band:#2C3447;--f:'Cinzel';--fs:14px"><span class="t">The Moonstone</span><span class="a">Collins</span></a>
+        <a class="spine is-fav" href="#b-middlemarch" aria-label="Anna Karenina, Leo Tolstoy, a favorite" style="--w:72px;--h:298px;--c:#2B2D4A;--t:#D9B76A;--band:#D9B76A;--f:'Playfair Display SC';--fs:18px"><i class="foil" aria-hidden="true"></i><span class="t">Anna Karenina</span><span class="a">Tolstoy</span></a>
+        <a class="spine" href="#b-persuasion" aria-label="The House of Mirth, Edith Wharton" style="--w:44px;--h:262px;--c:#C7A24B;--t:#2A2412;--f:'Libre Baskerville';--fs:13px"><span class="t">The House of Mirth</span><span class="a">Wharton</span></a>
+        <a class="spine" href="#b-walden" aria-label="Villette, Charlotte Brontë" style="--w:46px;--h:254px;--c:#6F8A8B;--t:#F4F1E6;--f:'Cinzel';--fs:15px"><span class="t">Villette</span><span class="a">Brontë</span></a>
+        <a class="spine" href="#b-moby" aria-label="Dracula, Bram Stoker" style="--w:42px;--h:242px;--c:#171717;--t:#B9433D;--f:'IM Fell English SC';--fs:19px"><span class="t">Dracula</span><span class="a">Stoker</span></a>
+        <a class="spine" href="#b-persuasion" aria-label="Howards End, E. M. Forster" style="--w:40px;--h:250px;--c:#8BA27B;--t:#1E2A1A;--f:'Josefin Sans';--fs:13px"><span class="t">HOWARDS END</span><span class="a">Forster</span></a>
+        <a class="spine" href="#b-middlemarch" aria-label="Sense and Sensibility, Jane Austen" style="--w:46px;--h:264px;--c:#5A6C9A;--t:#F5EEDC;--band:#F5EEDC;--f:'Playfair Display SC';--fs:12.5px"><span class="t">Sense and Sensibility</span><span class="a">Austen</span></a>
+        <a class="spine" href="#b-moby" aria-label="The Odyssey, Homer" style="--w:52px;--h:276px;--c:#B5643E;--t:#1E1610;--band:#1E1610;--f:'Cinzel';--fs:16px"><span class="t">The Odyssey</span><span class="a">Homer</span></a>
+        <span class="bookend" aria-hidden="true"></span>
+        <span class="plate" aria-hidden="true">2025</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Persuasion: rating, review, read date, a recommendation slip -->
+  <section class="pull first" id="b-persuasion" aria-label="Persuasion, Jane Austen">
+    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <div class="book" style="background:#8C5A78;color:#F6E9EF;font-family:'Playfair Display SC'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px">Persuasion</b><span>Jane Austen</span></div>
+    <div class="slip" aria-label="Recommended by Ada"><i>recommended by Ada</i></div>
+    <article class="letter">
+      <h2>Persuasion<i class="foil big" role="img" aria-label="A favorite"></i></h2>
+      <p class="by">Jane Austen</p>
+      <div class="row"><span class="dots" role="img" aria-label="4 out of 5"><i></i><i></i><i></i><i></i><i class="o"></i></span><span class="when">read Oct 2026</span></div>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+    </article>
+  </section>
+
+  <!-- Walden: rating and read date only, no review -->
+  <section class="pull" id="b-walden" aria-label="Walden, Henry David Thoreau">
+    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <div class="book" style="background:#7C9064;color:#FDF8EA;font-family:'Josefin Sans'"><i class="frame"></i><b>WALDEN</b><span>Henry David Thoreau</span></div>
+    <article class="card">
+      <h2>Walden</h2>
+      <p class="by">Henry David Thoreau</p>
+      <div class="row"><span class="dots" role="img" aria-label="3 out of 5"><i></i><i></i><i></i><i class="o"></i><i class="o"></i></span><span class="when">read Sep 2026</span></div>
+    </article>
+  </section>
+
+  <!-- Moby-Dick: no review, no read date, so the date added is shown -->
+  <section class="pull" id="b-moby" aria-label="Moby-Dick, Herman Melville">
+    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <div class="book" style="background:#24474F;color:#E8E0C8;font-family:'IM Fell English SC'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="margin-top:34px">Moby-Dick</b><span>Herman Melville</span></div>
+    <div class="slip" aria-label="Recommended by Theo"><i>recommended by Theo</i></div>
+    <article class="card">
+      <h2>Moby-Dick<i class="foil big" role="img" aria-label="A favorite"></i></h2>
+      <p class="by">Herman Melville</p>
+      <div class="row"><span class="dots" role="img" aria-label="5 out of 5"><i></i><i></i><i></i><i></i><i></i></span><span class="when">shelved Mar 2026</span></div>
+    </article>
+  </section>
+
+  <!-- Middlemarch: review, no slip -->
+  <section class="pull" id="b-middlemarch" aria-label="Middlemarch, George Eliot">
+    <a class="scrim" href="#shelf" aria-label="Put the book back"></a>
+    <div class="book" style="background:#2E3F66;color:#EFE3C6;font-family:'Libre Baskerville'"><i class="frame"></i><i class="foil" aria-hidden="true"></i><b style="font-size:28px;margin-top:34px">Middlemarch</b><span>George Eliot</span></div>
+    <article class="letter">
+      <h2>Middlemarch<i class="foil big" role="img" aria-label="A favorite"></i></h2>
+      <p class="by">George Eliot</p>
+      <div class="row"><span class="dots" role="img" aria-label="5 out of 5"><i></i><i></i><i></i><i></i><i></i></span><span class="when">read Nov 2026</span></div>
+      <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+      <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
+    </article>
+  </section>
+</div>
+</body>
+</html>
