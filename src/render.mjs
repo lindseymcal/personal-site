@@ -5,9 +5,6 @@ import { packIntoRows, packNewestChronologically } from './layout.mjs';
 import { spineStyle, homeSpineWidth, homeSpineHeight, coverFontSize, coverSpineLayout } from './spine.mjs';
 import { substackSubscribeUrl } from './site.mjs';
 
-const FONTS_BASE = 'family=Andika:wght@400;700&family=Patrick+Hand';
-const FONTS_BOOKS = `${FONTS_BASE}&family=Cinzel:wght@500&family=IM+Fell+English+SC&family=Josefin+Sans:wght@600&family=Libre+Baskerville&family=Playfair+Display+SC:wght@700`;
-
 // A tiny script that scales the 1280x800 scene to fit the window (and sizes the phone wall to the width).
 // The pages still work with no script; they just show the scene at full size.
 //   fitted     class on <html>: switches on the "fit the window" CSS in assets/site.css
@@ -37,7 +34,7 @@ function homeWindow(base) {
   return `<a class="home" href="${base}index.html" aria-label="Back to the study"><i class="fl"></i><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="ar"></i><i class="sh"></i></a>`;
 }
 
-function pageShell({ title, base = '', css = [], fonts = FONTS_BASE, htmlClass = '', stageH = 800, scene = true, bodyClass = '', body }) {
+function pageShell({ title, base = '', css = [], htmlClass = '', stageH = 800, scene = true, bodyClass = '', body }) {
   const tall = scene && stageH > 800;
   const classes = [scene ? 'scene' : '', htmlClass, tall ? 'tall' : ''].filter(Boolean).join(' ');
   return `<!doctype html>
@@ -46,9 +43,7 @@ function pageShell({ title, base = '', css = [], fonts = FONTS_BASE, htmlClass =
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?${fonts}&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${base}assets/fonts.css">
 <link rel="stylesheet" href="${base}assets/site.css">
 ${css.map((c) => `<link rel="stylesheet" href="${base}assets/${c}.css">`).join('\n')}
 ${scene ? FIT_SCRIPT : ''}
@@ -311,7 +306,6 @@ export function renderBooks({ config, groups, colorFor, coverStatsFor = () => un
   return GENERATED_NOTE + pageShell({
     title: `Books, ${config.name}`,
     css: ['books'],
-    fonts: FONTS_BOOKS,
     htmlClass: 'p-books',
     stageH,
     body: `<div class="fit"><div class="stage books" id="shelf" style="height:${stageH}px">

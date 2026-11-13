@@ -182,7 +182,7 @@ test('ids are unique on every page', () => {
   }
 });
 
-test('no external requests except Google Fonts: no images, scripts, iframes, imports, Open Library, or remote CSS urls', () => {
+test('NO external requests at all (fonts are self-hosted): no images, scripts, iframes, imports, Open Library, or remote CSS urls', () => {
   const css = fs.readdirSync(path.join(REPO, 'assets')).filter((f) => f.endsWith('.css')).map((f) => `assets/${f}`);
   for (const rel of [...ALL, ...css]) {
     // the one picture we ship on purpose is Zee's painting in the frame (a fixed local file)
@@ -193,7 +193,8 @@ test('no external requests except Google Fonts: no images, scripts, iframes, imp
     assert.ok(!/(?:src|srcset|poster|data)\s*=\s*["']?https?:/i.test(text), `${rel}: remote src`);
     for (const m of text.matchAll(/<link\b[^>]*>/g)) {
       const href = m[0].match(/href="([^"]*)"/)?.[1] ?? '';
-      if (/^https?:/.test(href)) assert.match(href, /^https:\/\/fonts\.(googleapis|gstatic)\.com(\/|$)/, `${rel}: ${href}`);
+      assert.ok(!/^(https?:)?\/\//i.test(href), `${rel}: <link> to an outside address: ${href}`);
+      assert.ok(!/preconnect|dns-prefetch/i.test(m[0]), `${rel}: preconnect to an outside host`);
     }
     for (const m of text.matchAll(/<script\b[^>]*>/g)) assert.equal(m[0], '<script>', `${rel}: script tag with attributes`);
   }
@@ -273,4 +274,27 @@ test('every focusable thing has a visible focus style (global :focus-visible out
 test('the books page review letters are keyboard-reachable (scrollable region has tabindex)', () => {
   const html = read('books.html');
   for (const m of html.matchAll(/<article class="letter"[^>]*>/g)) assert.match(m[0], /tabindex="0"/);
+});
+
+test('fonts are self-hosted: every @font-face is a local woff2 that exists, with font-display swap, and each family has its OFL license', () => {
+  const css = read('assets/fonts.css');
+  const faces = [...css.matchAll(/@font-face\{([^}]*)\}/g)].map((m) => m[1]);
+  assert.equal(faces.length, 8);
+  const families = new Set();
+  for (const f of faces) {
+    families.add(f.match(/font-family:'([^']+)'/)[1]);
+    assert.match(f, /font-display:swap/);
+    const url = f.match(/url\(([^)]+)\)/)[1];
+    assert.match(url, /^fonts\/[a-z0-9-]+\.woff2$/, 'local relative woff2 only');
+    assert.ok(fs.existsSync(path.join(REPO, 'assets', url)), url);
+  }
+  assert.deepEqual([...families].sort(), ['Andika', 'Cinzel', 'IM Fell English SC', 'Josefin Sans', 'Libre Baskerville', 'Patrick Hand', 'Playfair Display SC']);
+  const licenses = fs.readdirSync(path.join(REPO, 'assets/fonts')).filter((f) => f.startsWith('OFL-'));
+  assert.equal(licenses.length, 7);
+  for (const l of licenses) assert.match(read(`assets/fonts/${l}`), /SIL OPEN FONT LICENSE Version 1\.1/);
+  // every page pulls the local stylesheet
+  for (const rel of ALL) assert.match(read(rel), /<link rel="stylesheet" href="(\.\.\/)?assets\/fonts\.css">/, rel);
+  // total weight stays modest
+  const kb = fs.readdirSync(path.join(REPO, 'assets/fonts')).filter((f) => f.endsWith('.woff2')).reduce((n, f) => n + fs.statSync(path.join(REPO, 'assets/fonts', f)).size, 0) / 1024;
+  assert.ok(kb < 200, `${kb.toFixed(0)} KB of fonts`);
 });
