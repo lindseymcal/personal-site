@@ -1,0 +1,29 @@
+/* One page lifted out of the notebook. Matches docs/design/essay.html. */
+body.p-essay{font:19px/1.7 var(--body);color:var(--ink);min-height:100vh;padding:64px 0 90px;
+  background:radial-gradient(ellipse 900px 600px at 50% 0,rgba(245,206,122,.30),rgba(245,206,122,0) 70%),repeating-linear-gradient(90deg,#6E4A31 0 150px,#74503A 150px 152px,#6B472E 152px 300px);background-attachment:fixed}
+.sheet{position:relative;width:760px;margin:0 auto;padding:72px 84px 64px;background:radial-gradient(ellipse at 30% 10%,rgba(255,255,255,.4),rgba(255,255,255,0) 50%),var(--paper);border-radius:4px;box-shadow:0 22px 40px rgba(0,0,0,.45);transform:rotate(.3deg)}
+.sheet::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:radial-gradient(circle at 0 10px,transparent 4px,var(--paper) 4.5px) 0 0/10px 22px repeat-y}
+.sheet h1{font:400 54px/1.04 var(--hand);color:var(--ink);margin-bottom:10px}
+.sheet .when{font:400 22px/1 var(--hand);color:var(--red-pencil);margin-bottom:34px}
+.sheet p{margin-bottom:22px;max-width:64ch}
+.sheet .lede{font-size:21px}
+.sheet h2{font:400 32px/1.1 var(--hand);margin:38px 0 12px}
+.sheet blockquote{font:400 30px/1.25 var(--hand);color:var(--blue-ink);margin:32px 0;padding-left:24px;border-left:3px solid rgba(46,42,154,.35)}
+.sheet .fig{height:220px;margin:28px 0;border:10px solid #FFFDF6;box-shadow:0 4px 10px rgba(0,0,0,.2);transform:rotate(-1deg);
+    background:radial-gradient(circle at 70% 30%,#F2D58A 0 9%,transparent 10%),linear-gradient(#9FC6DF 0 50%,#9BA89C 50% 72%,#5F7C99 72%)}
+.end{display:flex;align-items:center;gap:16px;margin-top:46px;padding-top:26px;border-top:1.5px dashed #D3C4A4;font-size:16px;color:var(--pencil)}
+.end a{display:flex;align-items:center;gap:14px;text-decoration:none}
+.end a span{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.env{position:relative;flex:none;width:56px;height:36px;background:#FFF8E6;border-radius:3px;box-shadow:0 3px 6px rgba(0,0,0,.2)}
+.env::before{content:"";position:absolute;inset:0 0 40% 0;background:#F3E5C4;clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top}
+.env::after{content:"";position:absolute;right:5px;top:5px;width:10px;height:12px;background:var(--rose)}
+@media (prefers-reduced-motion: no-preference){
+.env::before{transition:transform .4s cubic-bezier(.3,1.4,.5,1)}
+.end a:hover .env::before,.end a:focus-visible .env::before{transform:rotateX(160deg)}
+}
+
+@media (max-width:700px){
+  body.p-essay{padding:96px 10px 60px;background-attachment:scroll}
+  .sheet{width:100%;padding:40px 26px 36px}
+  .sheet h1{font-size:40px}
+}

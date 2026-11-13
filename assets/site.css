@@ -1,0 +1,60 @@
+/* Shared by every page: colors, base styles, the way back to the study, and fitting the scene to the window. */
+:root{
+  --wall:#2F3752; --wall-deep:#232A40; --glow:#F5CE7A; --wood:#7B5236; --wood-dk:#553723; --paper:#F4EAD5; --ink:#2A2620;
+  --pencil:#5A544B; --blue-ink:#2E2A9A; --red-pencil:#9A4040; --brass:#B98B4A;
+  --plum:#7A4C6B; --moss:#6F8A5B; --teal:#3F7A7A; --mustard:#C9A040; --rose:#B7837A; --navy:#3B4A73;
+  --hand:"Patrick Hand",cursive; --body:Andika,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--wall-deep)}
+body{font:17px/1.5 var(--body);color:var(--ink)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:3px solid var(--glow);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---- the scene is drawn at 1280x800 ----
+   Without scripts it simply sits in the middle of the page at full size.
+   With the tiny script in each page (it adds the class "fitted" and sets --s), it scales to fit the window. */
+.stage{position:relative;width:1280px;height:800px;margin:0 auto;overflow:hidden}
+@media (min-width:701px){
+  html.fitted,html.fitted body{height:100%;overflow:hidden}
+  html.fitted .fit{position:fixed;inset:0}
+  html.fitted .stage{position:absolute;left:50%;top:50%;margin:-400px 0 0 -640px;transform:scale(var(--s,1))}
+  /* a scene taller than 800 (a big bookshelf): fit the width, let the page scroll down */
+  html.fitted.tall,html.fitted.tall body{height:auto;overflow-x:hidden;overflow-y:auto}
+  html.fitted.tall .fit{position:relative;inset:auto;height:calc(var(--stage-h)*1px*var(--s,1))}
+  html.fitted.tall .stage{top:0;margin-top:0;height:calc(var(--stage-h)*1px);transform-origin:50% 0}
+}
+
+/* ---- the way home: a round brass window onto the study ---- */
+.home{position:relative;display:block;width:84px;height:84px;border-radius:50%;border:6px solid var(--brass);overflow:hidden;box-shadow:0 6px 14px rgba(0,0,0,.45);
+  background:radial-gradient(circle at 58% 62%,rgba(245,206,122,.55),rgba(245,206,122,0) 55%),linear-gradient(#2F3752,#232A40);transition:filter .3s}
+.home i{position:absolute;display:block}
+.home .s1{left:12px;bottom:18px;width:6px;height:26px;background:var(--plum)}
+.home .s2{left:19px;bottom:18px;width:6px;height:31px;background:var(--moss)}
+.home .s3{left:26px;bottom:18px;width:6px;height:24px;background:var(--mustard)}
+.home .fl{left:0;right:0;bottom:0;height:18px;background:#4B311F}
+.home .sh{left:44px;top:24px;width:26px;height:16px;background:#D9A84B;clip-path:polygon(25% 0,75% 0,100% 100%,0 100%)}
+.home .ar{left:52px;top:38px;width:3px;height:22px;background:#222}
+.home:hover,.home:focus-visible{filter:brightness(1.25) drop-shadow(0 0 10px rgba(245,206,122,.6))}
+.stage > .home{position:absolute;left:28px;top:24px;z-index:10}
+
+/* pages one level deeper add a second small object under the window */
+.way{position:fixed;left:28px;top:24px;display:flex;flex-direction:column;gap:14px;align-items:center;z-index:10}
+.nb{display:block;width:44px;height:56px;border-radius:3px 6px 6px 3px;background:#2E4A63;box-shadow:inset 6px 0 0 rgba(0,0,0,.25),0 4px 8px rgba(0,0,0,.4);position:relative}
+.nb::after{content:"";position:absolute;right:-3px;top:4px;bottom:4px;width:4px;background:var(--paper);border-radius:0 2px 2px 0}
+.nb::before{content:"";position:absolute;left:16px;top:0;bottom:0;width:4px;background:var(--rose)}
+.tinlink{display:block;width:54px;height:42px;border-radius:6px;background:linear-gradient(#9DB0BC,#7E929E);box-shadow:0 4px 8px rgba(0,0,0,.4);position:relative}
+.tinlink::after{content:"";position:absolute;left:8px;right:8px;top:9px;height:14px;background:var(--paper);border-radius:2px}
+@media (prefers-reduced-motion: no-preference){
+  .nb,.tinlink{transition:transform .3s}
+  .nb:hover,.nb:focus-visible{transform:rotate(-8deg)}
+  .tinlink:hover,.tinlink:focus-visible{transform:rotate(-8deg) translateY(-3px)}
+}
+
+/* ---- phone ---- */
+@media (max-width:700px){
+  .stage > .home{position:fixed;left:12px;top:12px;transform:scale(.72);transform-origin:0 0}
+  .way{left:12px;top:12px}
+  .way .home{transform:scale(.72);transform-origin:0 0;margin-bottom:-24px}
+}
