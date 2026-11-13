@@ -170,7 +170,7 @@ test('books-extra: null, array and string extras do not throw', () => {
 });
 
 test('spine colors: a hostile cached color is a latent hole in the style attribute (cache is Zee-owned, still worth checking)', () => {
-  // content/spine-colors.json is written by the build from sips output, so only a hand edit can put
+  // the color cache file is written by the build from sips output, so only a hand edit can put
   // junk here. This test pins the behavior so a regression or an accidental hand edit is noticed.
   const html = buildPages({ csvText: csvOf({}).replace(',,,3,', ',,="0141439688",3,'), colors: { '0141439688': '#112233' } }).pages['books.html'];
   assert.ok(html.includes('--c:#112233'));

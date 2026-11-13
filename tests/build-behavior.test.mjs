@@ -39,7 +39,9 @@ globalThis.fetch = async (url) => { fs.appendFileSync(${JSON.stringify(path.join
 
 function runBuild(dir, csv, flags = [], { trap } = {}) {
   assert.ok(csv && path.isAbsolute(csv), 'tests must always pass an explicit absolute CSV path');
-  const args = [...(trap ? ['--import', trap] : []), path.join(dir, 'scripts/build.mjs'), csv, ...flags];
+  // any CSV other than the real default needs an explicit --cache; keep it inside the temp folder
+  const cacheFlag = flags.includes('--cache') ? [] : ['--cache', path.join(dir, 'cache.json')];
+  const args = [...(trap ? ['--import', trap] : []), path.join(dir, 'scripts/build.mjs'), csv, ...cacheFlag, ...flags];
   return spawnSync(process.execPath, args, { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
 }
 
@@ -82,7 +84,7 @@ test('control: without --offline the trap DOES see fetches for ISBNs not in the 
   const log = fs.readFileSync(path.join(dir, 'fetch.log'), 'utf8');
   assert.match(log, /^https:\/\/covers\.openlibrary\.org\/b\/isbn\//m);
   // network errors are not cached: the cache file stays empty so the next build retries
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.agent-fleet/goodreads/spine-colors.json'), 'utf8')), {});
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'cache.json'), 'utf8')), {});
   assert.match(r.stdout, /failed \(will retry next build\)/);
 }, { timeout: 120_000 });
 
@@ -125,7 +127,7 @@ test('an empty CSV (header only) and a totally empty file build every page witho
     const dir = makeCopy();
     const csv = path.join(dir, 'empty.csv');
     fs.writeFileSync(csv, content);
-    const r = runBuild(dir, csv, ['--offline']);
+    const r = runBuild(dir, csv, ['--offline', '--allow-empty']);
     assert.equal(r.status, 0, `${JSON.stringify(content)}: ${r.stderr}`);
     assert.match(r.stdout, /Read 0 books/);
     const books = fs.readFileSync(path.join(dir, 'books.html'), 'utf8');

@@ -26,6 +26,14 @@ export const DEFAULT_CONFIG = {
   reviews: 'all', // which reviews to publish: 'all' | 'chosen' | 'none'
 };
 
+// Fails closed: not set at all means the default ("all"), but anything set to something unknown
+// (a typo, wrong case, a stray space) means "none", so a mistake can never publish more than intended.
+export const REVIEW_MODES = ['all', 'chosen', 'none'];
+export function normalizeReviewsSetting(value) {
+  if (value === undefined) return DEFAULT_CONFIG.reviews;
+  return REVIEW_MODES.includes(value) ? value : 'none';
+}
+
 export function normalizeConfig(input = {}) {
   const raw = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
   const c = { ...DEFAULT_CONFIG };
@@ -34,7 +42,7 @@ export function normalizeConfig(input = {}) {
   for (const key of ['artSiteUrl', 'artInstagramUrl', 'linkedinUrl', 'substackUrl']) {
     c[key] = safeUrl(raw[key], DEFAULT_CONFIG[key]);
   }
-  c.reviews = ['all', 'chosen', 'none'].includes(raw.reviews) ? raw.reviews : DEFAULT_CONFIG.reviews;
+  c.reviews = normalizeReviewsSetting(raw.reviews);
   c.resumePath = safeLocalPath(raw.resumePath, DEFAULT_CONFIG.resumePath);
   return c;
 }
@@ -117,6 +125,8 @@ export function parseEssay(html, fileName) {
     day: Number(m[3]),
     summary: (meta['essay-summary'] ?? '').trim().slice(0, 160),
     substackUrl: safeUrl(meta['essay-substack'], ''),
+    // the tag is there but is not a usable web address
+    substackRejected: (meta['essay-substack'] ?? '').trim() !== '' && safeUrl(meta['essay-substack'], '') === '',
   };
 }
 
@@ -138,9 +148,23 @@ export function splitYearsAcrossPages(groups) {
 }
 
 // The essay footer link sits between two comment markers so the build can regenerate it from the
-// essay's essay-substack meta tag (one place to edit). Returns { html, found }.
+// essay's essay-substack meta tag (one place to edit). To protect the essay text, it only rewrites when
+// there is exactly one opening and one closing marker, in that order, and what sits between them is just
+// a single <a ...>...</a> link. Otherwise the file is left alone and the reason says why.
+// Returns { ok: true, html } or { ok: false, reason }.
 export function applyEssayFooter(html, linkHtml) {
-  const re = /(<!--substack-link-->)[\s\S]*?(<!--\/substack-link-->)/;
-  if (!re.test(html)) return { html, found: false };
-  return { html: html.replace(re, (m, open, close) => `${open}\n      ${linkHtml}\n      ${close}`), found: true };
+  const OPEN = '<!--substack-link-->';
+  const CLOSE = '<!--/substack-link-->';
+  const opens = html.split(OPEN).length - 1;
+  const closes = html.split(CLOSE).length - 1;
+  if (opens === 0 && closes === 0) return { ok: false, reason: 'no substack-link markers around the footer link' };
+  if (opens !== 1 || closes !== 1) return { ok: false, reason: `expected exactly one opening and one closing substack-link marker, found ${opens} and ${closes}` };
+  const start = html.indexOf(OPEN) + OPEN.length;
+  const end = html.indexOf(CLOSE);
+  if (end < start) return { ok: false, reason: 'the closing substack-link marker comes before the opening one' };
+  const between = html.slice(start, end);
+  const single = /^\s*<a\b[^>]*>[\s\S]*?<\/a>\s*$/.test(between)
+    && (between.match(/<a\b/g) || []).length === 1 && (between.match(/<\/a>/g) || []).length === 1;
+  if (!single) return { ok: false, reason: 'the text between the markers is not just one link, so nothing was replaced' };
+  return { ok: true, html: `${html.slice(0, start)}\n      ${linkHtml}\n      ${html.slice(end)}` };
 }

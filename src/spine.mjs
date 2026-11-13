@@ -60,7 +60,7 @@ export function spineFontSize(title, width, height, caps = false) {
 }
 
 // Everything the template needs for one spine.
-//   colorHex  the color read from the cover (or null)  - cached in content/spine-colors.json
+//   colorHex  the color read from the cover (or null)  - cached outside the repo (see scripts/build.mjs)
 export function spineStyle(book, colorHex) {
   const bg = book.color || colorHex || fallbackColor(book.title);
   const width = spineWidth(book.pages);

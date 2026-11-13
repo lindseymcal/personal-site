@@ -4,6 +4,8 @@
 # PDFs: the résumé is added ON PURPOSE. To publish it, put it in this folder as resume.pdf
 # and add the line "!resume.pdf" below this comment.
 *.pdf
+# the preview build (npm run build:sample) writes here
+preview/
 .DS_Store
 node_modules/
 *.log

@@ -12,6 +12,9 @@ export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, 
     if (!header.map((h) => h.trim()).includes(col)) warnings.push(`the CSV has no "${col}" column: is this really a Goodreads library export?`);
   }
   const config = normalizeConfig(configRaw);
+  if (configRaw && configRaw.reviews !== undefined && configRaw.reviews !== config.reviews) {
+    warnings.push(`site.config.json: reviews must be exactly "all", "chosen" or "none" (got ${JSON.stringify(configRaw.reviews)}), so no reviews will be published`);
+  }
   const projects = normalizeProjects(projectsRaw);
   const books = rowsToBooks(csvToObjects(csvText)).map((b) => applyReviewPolicy(mergeExtra(b, extras), config.reviews, extras));
   const badColors = new Set();
@@ -33,7 +36,7 @@ export function buildPages({ csvText, extras = {}, colors = {}, configRaw = {}, 
   };
   for (const project of projects) pages[`projects/${project.slug}.html`] = renderProject({ config, project });
 
-  for (const isbn of badColors) warnings.push(`content/spine-colors.json has a bad color for ISBN ${isbn}; using a color from the title instead`);
+  for (const isbn of badColors) warnings.push(`the cover-color cache has a bad color for ISBN ${isbn}; using a color from the title instead`);
   warnings.push(...unmatchedExtraIds(books, extras).map((id) => `books-extra.json has "${id}" but no book on your read shelf has that Book Id`));
   return { pages, books, warnings };
 }

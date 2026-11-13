@@ -137,8 +137,10 @@ export function slugify(text) {
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'book';
 }
 
+// Fails closed: for the Spoiler column, anything filled in except an explicit false/no/0 counts as a spoiler.
 export function isTruthyFlag(value) {
-  return /^(true|yes|1)$/i.test(String(value ?? '').trim());
+  const v = String(value ?? '').trim();
+  return v !== '' && !/^(false|no|0)$/i.test(v);
 }
 
 // --- row -> book ------------------------------------------------------------------------------

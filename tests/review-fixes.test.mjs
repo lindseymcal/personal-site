@@ -27,7 +27,7 @@ function makeCopy() {
   fs.mkdirSync(path.join(dir, 'projects'));
   return dir;
 }
-const run = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...args], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
+const run = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...(args.includes('--cache') || args.length === 0 ? args : [...args, '--cache', path.join(dir, 'c.json')])], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
 const essay = (t, d) => parseEssay(`<meta name="essay-title" content="${t}"><meta name="essay-date" content="${d}">`, `${t}.html`);
 const section = (html, id) => html.match(new RegExp(`<section class="pull" id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
@@ -44,21 +44,92 @@ test('the build refuses to run with no CSV path, says why, and writes nothing', 
 test('package.json: build:sample uses the fixture, and neither script is a bare no-argument build', () => {
   const scripts = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8')).scripts;
   assert.match(scripts['build:sample'], /tests\/fixtures\/sample-goodreads\.csv/);
-  assert.match(scripts['build:sample'], /--cache tests\/fixtures\/sample-spine-colors\.json/);
+  assert.match(scripts['build:sample'], /--cache-seed tests\/fixtures\/sample-spine-colors\.json/);
   assert.match(scripts.build, /goodreads_library_export\.csv/);
 });
 
 test('the color cache lives outside the repo, and is pruned to the books in this build', () => {
   const dir = makeCopy();
+  // a copy of the fixture placed at the (temp-HOME) default path counts as "the real export" for this test
+  const real = path.join(dir, '.agent-fleet/goodreads/goodreads_library_export.csv');
+  fs.mkdirSync(path.dirname(real), { recursive: true });
+  fs.copyFileSync(FIXTURE, real);
   const cache = path.join(dir, '.agent-fleet/goodreads/spine-colors.json');
-  fs.mkdirSync(path.dirname(cache), { recursive: true });
-  fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456', 1111111111111: '#abcdef' }));
-  const r = run(dir, [FIXTURE, '--offline']);
-  assert.equal(r.status, 0, r.stderr);
-  const after = JSON.parse(fs.readFileSync(cache, 'utf8'));
-  assert.deepEqual(after, { 9780141439686: '#123456' }); // the removed book's ISBN is forgotten
+  const colors = { 9780141439686: '#123456' };
+  for (let i = 0; i < 3; i++) colors[`11111111111${i}`] = '#abcdef'; // 3 stale of 4: more than half
+  fs.writeFileSync(cache, JSON.stringify(colors));
+  const refused = run(dir, [real, '--offline', '--cache', cache]);
+  assert.equal(refused.status, 1);
+  assert.match(refused.stderr, /would forget 3 of the 4/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(cache, 'utf8')), colors, 'a refused build must not touch the cache');
+  assert.ok(!fs.existsSync(path.join(dir, 'index.html')), 'a refused build must not write pages');
+  // with the real default path the default cache is used without --cache; --prune allows the big prune
+  const ok = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), real, '--offline', '--prune'], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(cache, 'utf8')), { 9780141439686: '#123456' });
   assert.ok(!fs.existsSync(path.join(dir, 'content/spine-colors.json')));
   assert.ok(!fs.existsSync(path.join(REPO, 'content/spine-colors.json')), 'the repo must not carry a cache of ISBNs');
+});
+
+test('a small prune (half or fewer) is allowed without --prune', () => {
+  const dir = makeCopy();
+  const cache = path.join(dir, 'c.json');
+  fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456', 1111111111111: '#abcdef' }));
+  const r = run(dir, [FIXTURE, '--offline', '--cache', cache]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(cache, 'utf8')), { 9780141439686: '#123456' });
+});
+
+test('any CSV other than the real default needs --cache (the real cache is never used by accident)', () => {
+  const dir = makeCopy();
+  const r = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), FIXTURE, '--offline'], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /--cache/);
+  assert.ok(!fs.existsSync(path.join(dir, '.agent-fleet')));
+  assert.ok(!fs.existsSync(path.join(dir, 'index.html')));
+});
+
+test('a wrong file or an empty library stops the build before anything is written, unless --allow-empty', () => {
+  for (const [name, content] of [['wrong.csv', 'Name,Email\na,b\n'], ['empty.csv', 'Book Id,Title,Exclusive Shelf\n1,Only to read,to-read\n']]) {
+    const dir = makeCopy();
+    const csv = path.join(dir, name);
+    fs.writeFileSync(csv, content);
+    const cache = path.join(dir, 'c.json');
+    fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456' }));
+    const r = run(dir, [csv, '--offline', '--cache', cache]);
+    assert.equal(r.status, 1, name);
+    assert.match(r.stderr, /Nothing was changed/, name);
+    assert.deepEqual(JSON.parse(fs.readFileSync(cache, 'utf8')), { 9780141439686: '#123456' }, `${name}: cache must be untouched`);
+    assert.ok(!fs.existsSync(path.join(dir, 'index.html')), name);
+    assert.equal(run(dir, [csv, '--offline', '--cache', cache, '--allow-empty', '--prune']).status, 0, name);
+  }
+});
+
+test('build:sample writes a preview and changes nothing outside preview/', () => {
+  const scripts = JSON.parse(fs.readFileSync(path.join(REPO, 'package.json'), 'utf8')).scripts;
+  assert.match(scripts['build:sample'], /--out preview/);
+  assert.match(scripts['build:sample'], /--cache preview\/spine-colors\.json/);
+  const dir = makeCopy();
+  const snap = () => {
+    const out = {};
+    const walk = (d) => { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const f = path.join(d, e.name); if (e.isDirectory()) { if (f !== path.join(dir, 'preview')) walk(f); } else out[path.relative(dir, f)] = fs.readFileSync(f, 'utf8'); } };
+    walk(dir);
+    return out;
+  };
+  fs.writeFileSync(path.join(dir, 'index.html'), 'REAL PAGE');
+  fs.writeFileSync(path.join(dir, 'books.html'), 'REAL BOOKS');
+  fs.writeFileSync(path.join(dir, 'projects/real-project.html'), 'REAL PROJECT');
+  const before = snap();
+  const sampleArgs = scripts['build:sample'].replace('node scripts/build.mjs ', '').split(' ').map((a) => (a.startsWith('tests/') || a.startsWith('preview') ? path.join(dir, a) : a));
+  const r = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), FIXTURE, ...sampleArgs.slice(1), '--offline'], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(snap(), before, 'something outside preview/ changed');
+  for (const f of ['index.html', 'books.html', 'writing.html', 'projects.html', 'projects/agent-fleet.html', 'writing/placeholder-essay-one.html', 'assets/site.css']) {
+    assert.ok(fs.existsSync(path.join(dir, 'preview', f)), `preview/${f}`);
+  }
+  assert.notEqual(fs.readFileSync(path.join(dir, 'preview/index.html'), 'utf8'), 'REAL PAGE');
+  assert.ok(!fs.existsSync(path.join(dir, '.agent-fleet')));
+  assert.ok(fs.readFileSync(path.join(REPO, '.gitignore'), 'utf8').split('\n').includes('preview/'));
 });
 
 test('--cache points the build at another cache file (the sample build uses this)', () => {
@@ -75,7 +146,7 @@ test('without sips: one clear note, no lookups at all', () => {
   const dir = makeCopy();
   const trap = path.join(dir, 'trap.mjs');
   fs.writeFileSync(trap, `import fs from 'node:fs';\nglobalThis.fetch = async (u) => { fs.appendFileSync(${JSON.stringify(path.join(dir, 'fetch.log'))}, u + '\\n'); throw new Error('x'); };\n`);
-  const r = spawnSync(process.execPath, ['--import', trap, path.join(dir, 'scripts/build.mjs'), FIXTURE], { cwd: dir, encoding: 'utf8', env: { PATH: '', HOME: dir } });
+  const r = spawnSync(process.execPath, ['--import', trap, path.join(dir, 'scripts/build.mjs'), FIXTURE, '--cache', path.join(dir, 'c.json')], { cwd: dir, encoding: 'utf8', env: { PATH: '', HOME: dir } });
   assert.equal(r.status, 0, r.stderr);
   assert.equal((r.stderr.match(/"sips" was not found/g) || []).length, 1);
   assert.ok(!fs.existsSync(path.join(dir, 'fetch.log')));
@@ -87,8 +158,8 @@ test('sipsAvailable asks once and reports a missing tool', () => {
 });
 
 test('a review flagged as a spoiler in the CSV is never published', () => {
-  assert.equal(isTruthyFlag('true'), true);
-  assert.equal(isTruthyFlag(''), false);
+  for (const v of ['true', 'TRUE', 'yes', '1', 'x', 'spoiler', ' true ']) assert.equal(isTruthyFlag(v), true, v);
+  for (const v of ['', ' ', 'false', 'False', 'no', '0', undefined]) assert.equal(isTruthyFlag(v), false, String(v));
   const row = { 'Exclusive Shelf': 'read', 'Book Id': '1', Title: 'T', 'My Review': 'The butler did it.', Spoiler: 'true' };
   assert.equal(rowToBook(row).review, '');
   assert.equal(rowToBook({ ...row, Spoiler: '' }).review, 'The butler did it.');
@@ -102,8 +173,10 @@ test('a review flagged as a spoiler in the CSV is never published', () => {
 test('reviews setting: all, chosen and none', () => {
   assert.equal(normalizeConfig({}).reviews, 'all');
   assert.equal(normalizeConfig({ reviews: 'chosen' }).reviews, 'chosen');
-  assert.equal(normalizeConfig({ reviews: 'everything' }).reviews, 'all');
-  assert.equal(normalizeConfig({ reviews: ['none'] }).reviews, 'all');
+  // fails closed: a mistake never publishes more than intended
+  for (const bad of ['everything', 'Chosen', 'chosen ', 'ALL', '', null, ['all'], 1]) assert.equal(normalizeConfig({ reviews: bad }).reviews, 'none', JSON.stringify(bad));
+  assert.ok(buildPages({ csvText, configRaw: { reviews: 'Chosen' } }).warnings.some((w) => /reviews must be exactly/.test(w)));
+  assert.ok(!buildPages({ csvText, configRaw: {} }).warnings.some((w) => /reviews must be/.test(w)));
   const b = { id: '1', review: 'x' };
   assert.equal(applyReviewPolicy(b, 'all', {}).review, 'x');
   assert.equal(applyReviewPolicy(b, 'none', { 1: { showReview: true } }).review, '');
@@ -161,9 +234,9 @@ test('cover download checks: host, image type, size', async () => {
 test('essay footer: the essay-substack meta is the single source of the footer link', () => {
   const html = '<footer>\n<!--substack-link-->\n<a href="old">x</a>\n<!--/substack-link-->\n</footer>';
   const out = applyEssayFooter(html, '<a href="new">y</a>');
-  assert.equal(out.found, true);
+  assert.equal(out.ok, true);
   assert.ok(out.html.includes('href="new"') && !out.html.includes('href="old"'));
-  assert.equal(applyEssayFooter('<footer></footer>', 'x').found, false);
+  assert.equal(applyEssayFooter('<footer></footer>', 'x').ok, false);
 
   const dir = makeCopy();
   const file = path.join(dir, 'writing/placeholder-essay-one.html');
@@ -201,4 +274,47 @@ test('.gitignore: PDFs need an explicit opt-in and only the one fixture CSV is a
   assert.ok(g.includes('*.csv'));
   assert.ok(g.includes('!tests/fixtures/sample-goodreads.csv'));
   assert.ok(!g.some((l) => /^!.*\*/.test(l)));
+});
+
+test('footer rewrite never deletes essay text: only one marker pair around a single link', () => {
+  const O = '<!--substack-link-->', C = '<!--/substack-link-->';
+  const link = '<a href="n">new</a>';
+  const body = '<p>My essay text, which must survive.</p>';
+  // orphan opening marker, with essay text after it and a closing marker much later
+  const orphan = `${O}${body}<footer>${O}\n<a href="old">x</a>\n${C}</footer>`;
+  assert.equal(applyEssayFooter(orphan, link).ok, false);
+  // closing before opening
+  assert.equal(applyEssayFooter(`${C}${body}${O}`, link).ok, false);
+  // only an opening marker
+  assert.equal(applyEssayFooter(`${body}${O}<a href="old">x</a>`, link).ok, false);
+  // text between the markers that is not just a link
+  const withText = `${O}${body}<a href="old">x</a>${C}`;
+  const r = applyEssayFooter(withText, link);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /not just one link/);
+  // two links between the markers
+  assert.equal(applyEssayFooter(`${O}<a href="1">a</a><a href="2">b</a>${C}`, link).ok, false);
+  // the happy path keeps everything around the markers byte for byte
+  const good = `<main>${body}</main><footer>${O}\n  <a href="old" target="_blank">old <b>bold</b></a>\n${C}</footer><p>after</p>`;
+  const ok = applyEssayFooter(good, link);
+  assert.equal(ok.ok, true);
+  assert.ok(ok.html.startsWith(`<main>${body}</main><footer>${O}`));
+  assert.ok(ok.html.endsWith(`${C}</footer><p>after</p>`));
+  assert.ok(ok.html.includes(link) && !ok.html.includes('old'));
+});
+
+test('the build leaves a damaged essay untouched and warns; a rejected essay-substack address is reported', () => {
+  const dir = makeCopy();
+  const damaged = path.join(dir, 'writing/placeholder-essay-one.html');
+  const text = fs.readFileSync(damaged, 'utf8').replace('<!--/substack-link-->', '');
+  fs.writeFileSync(damaged, text);
+  const bad = path.join(dir, 'writing/placeholder-essay-two.html');
+  const badText = fs.readFileSync(bad, 'utf8').replace(/content="https:\/\/your-name\.substack\.com\/p\/placeholder-essay-two"/, 'content="javascript:alert(1)"');
+  fs.writeFileSync(bad, badText);
+  const r = run(dir, [FIXTURE, '--offline']);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.readFileSync(damaged, 'utf8'), text);
+  assert.equal(fs.readFileSync(bad, 'utf8'), badText);
+  assert.match(r.stderr, /placeholder-essay-one\.html: footer link left untouched/);
+  assert.match(r.stderr, /placeholder-essay-two\.html: essay-substack is not a usable web address/);
 });

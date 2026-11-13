@@ -13,7 +13,7 @@ It's also a learning project: explain what you're doing and why, and prefer code
 - Small, reviewable changes; one concern per change.
 
 ## How it works
-- **The build needs an explicit CSV path.** Agents run `npm run build:sample` and never `npm run build` (that reads Zee's real export). Reviews flagged as spoilers are never published; `reviews` in `site.config.json` limits which others are.
+- **The build needs an explicit CSV path.** Agents run `npm run build:sample` (a preview of the whole site in the git-ignored `preview/` folder, which changes nothing else) and never `npm run build` (that reads Zee's real export and rewrites the real pages). To refresh the committed sample pages after a code change, run `node scripts/build.mjs tests/fixtures/sample-goodreads.csv --cache <a temp file> --cache-seed tests/fixtures/sample-spine-colors.json` and review the diff. Unknown `reviews` values fail closed to "none". Reviews flagged as spoilers are never published; `reviews` in `site.config.json` limits which others are.
 - `scripts/build.mjs` reads the Goodreads CSV plus `site.config.json`, `content/*.json` and `writing/*.html`, and writes `index.html`, `books.html`, `writing.html`, `projects.html` and `projects/*.html`. The generated pages are committed so the site can be served as-is (no build needed to serve).
 - `src/render.mjs` holds the page templates, `src/build-site.mjs` ties the pure pieces together, and `assets/*.css` holds the styles (one file per page, plus `site.css`).
 - Open Library cover colors are looked up at build time only (`src/cover.mjs`) and cached outside the repo in `~/.agent-fleet/goodreads/spine-colors.json` (the sample build uses `tests/fixtures/sample-spine-colors.json`).
