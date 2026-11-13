@@ -1,6 +1,13 @@
 # Goodreads exports: never commit these (only the one fake sample the tests use)
 *.csv
 !tests/fixtures/sample-goodreads.csv
+# Other spreadsheet/export formats, and anything named like a Goodreads export, anywhere in the repo
+*.numbers
+*.xlsx
+*.xls
+*.ods
+*.tsv
+goodreads*
 # PDFs: the résumé is added ON PURPOSE. To publish it, put it in this folder as resume.pdf
 # and add the line "!resume.pdf" below this comment.
 *.pdf

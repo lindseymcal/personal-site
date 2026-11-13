@@ -23,10 +23,10 @@ export const DEFAULT_CONFIG = {
   linkedinUrl: 'https://www.linkedin.com/in/your-name',
   substackUrl: 'https://your-name.substack.com',
   resumePath: 'resume.pdf',
-  reviews: 'all', // which reviews to publish: 'all' | 'chosen' | 'none'
+  reviews: 'chosen', // which reviews to publish: 'all' | 'chosen' | 'none' (default: only ones marked showReview)
 };
 
-// Fails closed: not set at all means the default ("all"), but anything set to something unknown
+// Fails closed: not set at all means the default ("chosen"), but anything set to something unknown
 // (a typo, wrong case, a stray space) means "none", so a mistake can never publish more than intended.
 export const REVIEW_MODES = ['all', 'chosen', 'none'];
 export function normalizeReviewsSetting(value) {

@@ -17,7 +17,7 @@ Nothing here is published. There is no remote; hosting is your decision.
 Your Goodreads profile is private, so the way in is the CSV export.
 
 1. On Goodreads: **My Books**, then **Import and export**, then **Export Library**. Download the `.csv` file when it is ready.
-2. Put it at `~/.agent-fleet/goodreads/goodreads_library_export.csv` (replacing the old one). Keep it out of this folder; `*.csv` is git-ignored as a safety net, but exports hold your private notes.
+2. Put it at `~/.agent-fleet/goodreads/goodreads_library_export.csv` (replacing the old one). Keep it out of this folder: the build refuses a CSV inside the repo, and `*.csv`, `*.numbers`, `*.xlsx`, `*.xls`, `*.ods`, `*.tsv` and anything named `goodreads*` are git-ignored as a safety net, but exports hold your private notes.
 3. Optional: open `content/books-extra.json` to mark favorites or add a "recommended by" slip.
    - The key is the book's Goodreads Book Id: the number in its Goodreads web address (`goodreads.com/book/show/`**`12345`**`-title`).
    - `"favorite": true` adds the gold star. `"recommendedBy": "Name"` adds the handwritten slip. `"color": "#8c5a78"` picks the spine color yourself (useful when Open Library has no cover or the wrong one). `"showReview": true` publishes that book's review when `reviews` is `"chosen"` (below).
@@ -25,9 +25,14 @@ Your Goodreads profile is private, so the way in is the CSV export.
 5. Look: `npm run serve`, open http://127.0.0.1:8080/books.html. Check the shelf and read the reviews that will show.
 6. When you like it, commit the changed `books.html` and `index.html`.
 
-**Which reviews are published** is the `reviews` setting in `site.config.json`:
-- `"all"` (the default when the setting is missing): every review you wrote, except any Goodreads marks as a spoiler.
-- `"chosen"`: only books with `"showReview": true` in `content/books-extra.json`.
+**Which reviews are published** is the `reviews` setting in `site.config.json`. It is `"chosen"` (and also what you get if the setting is missing): **a review is published only if you mark that book.** To publish a review, add `"showReview": true` for that book in `content/books-extra.json`:
+
+```json
+"12345": { "favorite": true, "showReview": true }
+```
+
+Unmarked books show the small library card (rating and date) and their review stays private. The other values:
+- `"all"`: every review you wrote, except any Goodreads marks as a spoiler.
 - `"none"`: no reviews; every book gets the small library card.
 - Anything else (a typo, capital letters, a stray space) is treated as `"none"`, with a warning, so a mistake never publishes more than you meant.
 
@@ -37,7 +42,7 @@ Notes:
 - Only books on your **read** shelf appear. Shelves are grouped by year read; with no read date, the year added is used and the card says "shelved".
 - The first build after adding books asks Open Library (once per book) for the cover so the spine can borrow its color. Colors are cached in `~/.agent-fleet/goodreads/spine-colors.json` (used only for your real export), **outside this repo** (a list of ISBNs would reveal your reading history, and the pages already carry the colors). The cache is pruned to the books in each build. The sample build keeps its own in `tests/fixtures/`.
 - `--offline` skips lookups (new books get a color picked from their title), and so does a Mac without `sips`; `--refresh-colors` retries books that had no cover. Add either after the path, e.g. `node scripts/build.mjs <file.csv> --offline`.
-- The bookshelf in the study shows your favorites first, then your most recent reads. That rule is one small function (`selectHomeShelf` in `src/books.mjs`) if you want to change it.
+- The bookshelf in the study shows your most recently read books, newest first (date read, or date added when there is no read date). Favorites get their star but no special place. That rule is one small function (`selectHomeShelf` in `src/books.mjs`) if you want to change it.
 - A rating of 0 on Goodreads means "not rated": no dots are shown.
 
 ## Update your links

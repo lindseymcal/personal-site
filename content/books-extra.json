@@ -1,6 +1,7 @@
 {
-  "_readme": "Your own notes about books, keyed by the Goodreads Book Id (the number in the book's Goodreads web address). favorite: true adds the gold star. recommendedBy adds the handwritten slip. color (like #8c5a78) overrides the spine color. Keys starting with _ are ignored. The entries below belong to the fake sample CSV; replace them with yours.",
-  "9000001": { "favorite": true, "recommendedBy": "Ada" },
+  "_readme": "Your own notes about books, keyed by the Goodreads Book Id (the number in the book's Goodreads web address). favorite: true adds the gold star. showReview: true publishes that book's review (site.config.json reviews is \"chosen\"). recommendedBy adds the handwritten slip. color (like #8c5a78) overrides the spine color. Keys starting with _ are ignored. The entries below belong to the fake sample CSV; replace them with yours.",
+  "9000001": { "favorite": true, "recommendedBy": "Ada", "showReview": true },
+  "9000008": { "showReview": true },
   "9000002": { "favorite": true },
   "9000004": { "favorite": true },
   "9000005": { "favorite": true, "recommendedBy": "Theo" },

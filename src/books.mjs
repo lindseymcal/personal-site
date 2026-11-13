@@ -220,12 +220,11 @@ export function groupByYear(books) {
   return years.map((y) => ({ year: y, label: y === 0 ? 'Undated' : String(y), books: map.get(y) }));
 }
 
-// THE HOME SHELF RULE (Zee hasn't confirmed it, so it lives here, in one place):
-// favorites first (most recent first), then the most recent other reads, up to `capacity` books.
+// THE HOME SHELF RULE (Zee chose it; it lives here, in one place):
+// the most recently read books (date read, else date added), newest first, up to `capacity` books.
+// Favorites get no special place on the home shelf (they still get their star).
 export function selectHomeShelf(books, capacity) {
-  const favorites = books.filter((b) => b.favorite).sort(byRecent);
-  const others = books.filter((b) => !b.favorite).sort(byRecent);
-  return [...favorites, ...others].slice(0, Math.max(0, capacity));
+  return [...books].sort(byRecent).slice(0, Math.max(0, capacity));
 }
 
 // The site.config.json "reviews" setting decides which reviews are published:

@@ -92,7 +92,7 @@ test('any CSV other than the real default needs --cache (the real cache is never
 test('a wrong file or an empty library stops the build before anything is written, unless --allow-empty', () => {
   for (const [name, content] of [['wrong.csv', 'Name,Email\na,b\n'], ['empty.csv', 'Book Id,Title,Exclusive Shelf\n1,Only to read,to-read\n']]) {
     const dir = makeCopy();
-    const csv = path.join(dir, name);
+    const csv = `${dir}-${name}`;
     fs.writeFileSync(csv, content);
     const cache = `${dir}-c.json`;
     fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456' }));
@@ -164,14 +164,15 @@ test('a review flagged as a spoiler in the CSV is never published', () => {
   assert.equal(rowToBook(row).review, '');
   assert.equal(rowToBook({ ...row, Spoiler: '' }).review, 'The butler did it.');
   const header = 'Book Id,Title,Author,Exclusive Shelf,My Review,Spoiler,Date Read\n';
-  const html = buildPages({ csvText: `${header}7,Spoiled,A B,read,The butler did it.,true,2026/01/01\n8,Fine,A B,read,Lovely.,,2026/01/02\n` }).pages['books.html'];
+  const html = buildPages({ csvText: `${header}7,Spoiled,A B,read,The butler did it.,true,2026/01/01\n8,Fine,A B,read,Lovely.,,2026/01/02\n`, configRaw: { reviews: 'all' }, extras: { 7: { showReview: true } } }).pages['books.html'];
   assert.ok(!html.includes('butler'));
   assert.ok(section(html, 'b-7').includes('class="card"'));
   assert.ok(section(html, 'b-8').includes('class="letter"'));
 });
 
-test('reviews setting: all, chosen and none', () => {
-  assert.equal(normalizeConfig({}).reviews, 'all');
+test('reviews setting: chosen (the default), all and none', () => {
+  assert.equal(normalizeConfig({}).reviews, 'chosen'); // fails closed when the setting is missing
+  assert.equal(JSON.parse(fs.readFileSync(path.join(REPO, 'site.config.json'), 'utf8')).reviews, 'chosen');
   assert.equal(normalizeConfig({ reviews: 'chosen' }).reviews, 'chosen');
   // fails closed: a mistake never publishes more than intended
   for (const bad of ['everything', 'Chosen', 'chosen ', 'ALL', '', null, ['all'], 1]) assert.equal(normalizeConfig({ reviews: bad }).reviews, 'none', JSON.stringify(bad));
@@ -185,7 +186,9 @@ test('reviews setting: all, chosen and none', () => {
   assert.equal(applyReviewPolicy(b, 'chosen', { 1: { showReview: true } }).review, 'x');
 
   const extras = { 9000001: { showReview: true } };
-  const build = (reviews) => buildPages({ csvText, extras, configRaw: { reviews } }).pages['books.html'];
+  const build = (reviews) => buildPages({ csvText, extras, configRaw: reviews === undefined ? {} : { reviews } }).pages['books.html'];
+  assert.ok(!build(undefined).includes('class="letter"') || section(build(undefined), 'b-9000001').includes('class="letter"'));
+  assert.ok(section(build(undefined), 'b-9000002').includes('class="card"')); // default is chosen: unmarked reviews stay private
   assert.ok(section(build('all'), 'b-9000001').includes('class="letter"'));
   assert.ok(section(build('chosen'), 'b-9000001').includes('class="letter"'));
   assert.ok(section(build('chosen'), 'b-9000002').includes('class="card"')); // Middlemarch has a review but was not chosen
@@ -367,4 +370,33 @@ test('error messages and README show the npm form of the flags', () => {
   assert.match(readme, /npm run build -- --prune/);
   assert.match(readme, /npm run build -- --allow-empty/);
   assert.match(readme, /Export from Goodreads once before your first `npm run build`/);
+});
+
+test('a CSV inside the repo is refused (only tests/fixtures may hold one); keep exports in ~/.agent-fleet/goodreads/', () => {
+  const dir = makeCopy();
+  for (const inside of ['export.csv', 'content/goodreads_library_export.csv', 'sample-goodreads.csv']) {
+    const csv = path.join(dir, inside);
+    fs.writeFileSync(csv, fs.readFileSync(FIXTURE));
+    const r = run(dir, [csv, '--offline']);
+    assert.equal(r.status, 1, inside);
+    assert.match(r.stderr, /inside the repo/);
+    assert.match(r.stderr, /~\/\.agent-fleet\/goodreads\//);
+    assert.ok(!fs.existsSync(path.join(dir, 'index.html')), inside);
+  }
+  // a relative path that reaches in is refused too
+  const rel = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), 'export.csv', '--offline', '--cache', `${dir}-c.json`], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
+  assert.match(rel.stderr, /inside the repo/);
+  // the fixture folder is the one allowed place (checked against the real repo's fixtures path)
+  assert.equal(run(dir, [FIXTURE, '--offline']).status, 0);
+});
+
+test('.gitignore keeps exports and spreadsheets out of git, anywhere in the repo', () => {
+  const ignored = ['export.csv', 'content/goodreads_library_export.numbers', 'content/books.numbers', 'a/b/c.xlsx', 'x.xls', 'x.ods', 'x.tsv', 'content/goodreads-export', 'deep/er/Goodreads_x.txt'.replace('Goodreads', 'goodreads'), 'resume.pdf', 'preview/index.html'];
+  for (const f of ignored) {
+    const r = spawnSync('git', ['check-ignore', '-q', f], { cwd: REPO });
+    assert.equal(r.status, 0, `${f} should be git-ignored`);
+  }
+  for (const f of ['tests/fixtures/sample-goodreads.csv', 'content/books-extra.json', 'index.html', 'tests/fixtures/sample-spine-colors.json']) {
+    assert.equal(spawnSync('git', ['check-ignore', '-q', f], { cwd: REPO }).status, 1, `${f} must stay tracked`);
+  }
 });

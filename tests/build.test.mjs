@@ -10,7 +10,8 @@ import { parseEssay } from '../src/site.mjs';
 
 const csvText = fs.readFileSync(new URL('./fixtures/sample-goodreads.csv', import.meta.url), 'utf8');
 const extras = {
-  9000001: { favorite: true, recommendedBy: 'Ada' },
+  9000001: { favorite: true, recommendedBy: 'Ada', showReview: true },
+  9000008: { showReview: true },
   9000002: { favorite: true },
   9000099: { favorite: true },
 };
@@ -106,7 +107,7 @@ test('every spine opens its own book, and every book can be put back', () => {
   assert.ok(html.includes('id="shelf"'));
 });
 
-test('home shelf: favorites first, newest first, using the same colors', () => {
+test('home shelf: newest first (favorites get no special place), using the same colors', () => {
   const html = build().pages['index.html'];
   const first = html.match(/<i class="sp[^"]*" style="width:\d+px;height:\d+px;background:(#[0-9a-f]{6})"/);
   assert.equal(first[1], '#123456'); // Middlemarch: favorite and the most recent

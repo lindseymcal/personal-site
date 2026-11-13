@@ -189,14 +189,17 @@ test('byRecent breaks ties by title so the order is stable', () => {
   assert.ok(byRecent(a, b) < 0);
 });
 
-test('selectHomeShelf: favorites first (newest first), then newest others, up to capacity', () => {
+test('selectHomeShelf: recency only (newest first), favorites get no special place, up to capacity', () => {
   const books = [
     mk('1', 'plain-new', '2026-10-01'),
     mk('2', 'fav-old', '2025-01-01', { favorite: true }),
     mk('3', 'plain-old', '2025-06-01'),
     mk('4', 'fav-new', '2026-02-01', { favorite: true }),
   ];
-  assert.deepEqual(selectHomeShelf(books, 10).map((b) => b.title), ['fav-new', 'fav-old', 'plain-new', 'plain-old']);
-  assert.deepEqual(selectHomeShelf(books, 3).map((b) => b.title), ['fav-new', 'fav-old', 'plain-new']);
+  assert.deepEqual(selectHomeShelf(books, 10).map((b) => b.title), ['plain-new', 'fav-new', 'plain-old', 'fav-old']);
+  assert.deepEqual(selectHomeShelf(books, 2).map((b) => b.title), ['plain-new', 'fav-new']);
   assert.deepEqual(selectHomeShelf(books, 0), []);
+  assert.equal(books[0].title, 'plain-new'); // the input is not reordered
+  // a book with only a date added (sortKey from Date Added) ranks by that date
+  assert.equal(selectHomeShelf([mk('5', 'shelved', '2026-12-01'), mk('6', 'read', '2026-11-01')], 1)[0].title, 'shelved');
 });

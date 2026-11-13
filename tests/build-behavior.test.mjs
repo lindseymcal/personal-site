@@ -57,7 +57,7 @@ function snapshot(dir) {
 
 test('the build script refuses a missing CSV path with a helpful message (and does not touch the real export)', () => {
   const dir = makeCopy();
-  const r = runBuild(dir, path.join(dir, 'nope.csv'), ['--offline']);
+  const r = runBuild(dir, `${dir}-nope.csv`, ['--offline']);
   assert.equal(r.status, 1);
   assert.match(r.stderr, /Can't find the Goodreads export/);
 });
@@ -125,7 +125,7 @@ test('an essay with a bad date or title is reported as a warning naming the file
 test('an empty CSV (header only) and a totally empty file build every page without crashing', () => {
   for (const content of ['Book Id,Title,Exclusive Shelf\n', '', '﻿', 'garbage with no commas\n']) {
     const dir = makeCopy();
-    const csv = path.join(dir, 'empty.csv');
+    const csv = `${dir}-empty.csv`;
     fs.writeFileSync(csv, content);
     const r = runBuild(dir, csv, ['--offline', '--allow-empty']);
     assert.equal(r.status, 0, `${JSON.stringify(content)}: ${r.stderr}`);

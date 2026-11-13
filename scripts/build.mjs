@@ -108,12 +108,18 @@ async function main() {
   if (!csvArg) {
     throw new Error('Tell me which CSV to build from (this is on purpose, so your real export is never read by accident):\n  npm run build          your real Goodreads export: rewrites the real pages\n  npm run build:sample   a preview from the fake sample books, written to preview/');
   }
-  const csvPath = path.resolve(csvArg);
+  const csvPath = realish(csvArg);
+  // Exports hold private notes, so they may not sit inside the repo (only the fake sample may).
+  const insideRepo = (() => { const r = path.relative(ROOT, csvPath); return r === '' || (!r.startsWith('..') && !path.isAbsolute(r)); })();
+  const insideFixtures = (() => { const r = path.relative(path.join(ROOT, 'tests', 'fixtures'), csvPath); return !r.startsWith('..') && !path.isAbsolute(r); })();
+  if (insideRepo && !insideFixtures && csvPath !== realish(DEFAULT_CSV)) {
+    throw new Error(`That CSV is inside the repo (${csvPath}). Keep Goodreads exports in ~/.agent-fleet/goodreads/ so they can never be committed. Nothing was changed.`);
+  }
   if (!fs.existsSync(csvPath)) {
     throw new Error(`Can't find the Goodreads export at ${csvPath}\nExport it from Goodreads (My Books > Import and export), then pass its path: node scripts/build.mjs path/to/file.csv`);
   }
   // The default cache belongs to the real export only. Any other CSV must say where its cache goes.
-  const isRealCsv = csvPath === DEFAULT_CSV;
+  const isRealCsv = csvPath === realish(DEFAULT_CSV);
   if (!values['--cache'] && !isRealCsv) {
     throw new Error('This CSV is not your real export, so I will not use your real color cache. Add --cache <file> (npm run build:sample does this for you).');
   }
