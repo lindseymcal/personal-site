@@ -6,7 +6,8 @@ A lamplit study. Each object in the room is the way into one part of the site. P
 - **Tests:** `npm test`
 - **Rebuild after ANY change** (books, links, essays, projects): `npm run build`. It reads your real Goodreads export and rewrites the real pages.
 - `npm run build:sample` is for developers and agents: it builds a preview of the whole site from fake sample books into the git-ignored `preview/` folder and touches nothing else.
-- The build always needs a CSV path and refuses to run without one. It also stops, changing nothing, if the CSV doesn't look like a Goodreads export or has no read books (pass `--allow-empty` to override), or if it would forget more than half of the saved cover colors (`--prune` to override).
+- The build always needs a CSV path and refuses to run without one. It also stops, changing nothing, if the CSV doesn't look like a Goodreads export or has no read books (`npm run build -- --allow-empty` to override), or if it would forget more than half of the saved cover colors (`npm run build -- --prune` to override).
+- **Export from Goodreads once before your first `npm run build`; until then the build stops** (it can't find your CSV).
 - **Design reference:** `docs/design/index.html` (the designer's mockups and the decisions behind them)
 
 Nothing here is published. There is no remote; hosting is your decision.

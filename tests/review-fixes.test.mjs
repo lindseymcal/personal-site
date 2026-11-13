@@ -19,7 +19,7 @@ const FIXTURE = path.join(REPO, 'tests/fixtures/sample-goodreads.csv');
 const csvText = fs.readFileSync(FIXTURE, 'utf8');
 
 const made = [];
-after(() => { for (const d of made) fs.rmSync(d, { recursive: true, force: true }); });
+after(() => { for (const d of made) for (const x of [d, `${d}-c.json`, `${d}-my-cache.json`]) fs.rmSync(x, { recursive: true, force: true }); });
 function tempDir() { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'rf-')); made.push(d); return d; }
 function makeCopy() {
   const dir = tempDir();
@@ -27,7 +27,7 @@ function makeCopy() {
   fs.mkdirSync(path.join(dir, 'projects'));
   return dir;
 }
-const run = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...(args.includes('--cache') || args.length === 0 ? args : [...args, '--cache', path.join(dir, 'c.json')])], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
+const run = (dir, args, env = {}) => spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), ...(args.includes('--cache') || args.length === 0 ? args : [...args, '--cache', `${dir}-c.json`])], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir, ...env } });
 const essay = (t, d) => parseEssay(`<meta name="essay-title" content="${t}"><meta name="essay-date" content="${d}">`, `${t}.html`);
 const section = (html, id) => html.match(new RegExp(`<section class="pull" id="${id}"[\\s\\S]*?</section>`))?.[0] ?? '';
 
@@ -73,7 +73,7 @@ test('the color cache lives outside the repo, and is pruned to the books in this
 
 test('a small prune (half or fewer) is allowed without --prune', () => {
   const dir = makeCopy();
-  const cache = path.join(dir, 'c.json');
+  const cache = `${dir}-c.json`;
   fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456', 1111111111111: '#abcdef' }));
   const r = run(dir, [FIXTURE, '--offline', '--cache', cache]);
   assert.equal(r.status, 0, r.stderr);
@@ -94,7 +94,7 @@ test('a wrong file or an empty library stops the build before anything is writte
     const dir = makeCopy();
     const csv = path.join(dir, name);
     fs.writeFileSync(csv, content);
-    const cache = path.join(dir, 'c.json');
+    const cache = `${dir}-c.json`;
     fs.writeFileSync(cache, JSON.stringify({ 9780141439686: '#123456' }));
     const r = run(dir, [csv, '--offline', '--cache', cache]);
     assert.equal(r.status, 1, name);
@@ -134,7 +134,7 @@ test('build:sample writes a preview and changes nothing outside preview/', () =>
 
 test('--cache points the build at another cache file (the sample build uses this)', () => {
   const dir = makeCopy();
-  const cache = path.join(dir, 'my-cache.json');
+  const cache = `${dir}-my-cache.json`;
   const r = run(dir, [FIXTURE, '--offline', '--cache', cache]);
   assert.equal(r.status, 0, r.stderr);
   assert.ok(fs.existsSync(cache));
@@ -146,7 +146,7 @@ test('without sips: one clear note, no lookups at all', () => {
   const dir = makeCopy();
   const trap = path.join(dir, 'trap.mjs');
   fs.writeFileSync(trap, `import fs from 'node:fs';\nglobalThis.fetch = async (u) => { fs.appendFileSync(${JSON.stringify(path.join(dir, 'fetch.log'))}, u + '\\n'); throw new Error('x'); };\n`);
-  const r = spawnSync(process.execPath, ['--import', trap, path.join(dir, 'scripts/build.mjs'), FIXTURE, '--cache', path.join(dir, 'c.json')], { cwd: dir, encoding: 'utf8', env: { PATH: '', HOME: dir } });
+  const r = spawnSync(process.execPath, ['--import', trap, path.join(dir, 'scripts/build.mjs'), FIXTURE, '--cache', `${dir}-c.json`], { cwd: dir, encoding: 'utf8', env: { PATH: '', HOME: dir } });
   assert.equal(r.status, 0, r.stderr);
   assert.equal((r.stderr.match(/"sips" was not found/g) || []).length, 1);
   assert.ok(!fs.existsSync(path.join(dir, 'fetch.log')));
@@ -317,4 +317,54 @@ test('the build leaves a damaged essay untouched and warns; a rejected essay-sub
   assert.equal(fs.readFileSync(bad, 'utf8'), badText);
   assert.match(r.stderr, /placeholder-essay-one\.html: footer link left untouched/);
   assert.match(r.stderr, /placeholder-essay-two\.html: essay-substack is not a usable web address/);
+});
+
+test('--out may only be preview/ (or inside it); anything else is refused and nothing is written', () => {
+  for (const out of ['.', '..', os.homedir() + '/.agent-fleet', '/tmp', 'projects', 'preview/../x']) {
+    const dir = makeCopy();
+    fs.writeFileSync(path.join(dir, 'index.html'), 'REAL');
+    const home = tempDir();
+    const r = spawnSync(process.execPath, [path.join(dir, 'scripts/build.mjs'), FIXTURE, '--offline', '--cache', `${dir}-c.json`, '--out', out], { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: home } });
+    assert.equal(r.status, 1, `--out ${out}`);
+    assert.match(r.stderr, /--out may only be the preview folder/, out);
+    assert.equal(fs.readFileSync(path.join(dir, 'index.html'), 'utf8'), 'REAL', out);
+    assert.ok(!fs.existsSync(path.join(dir, 'books.html')), out);
+    assert.ok(!fs.existsSync(`${dir}-c.json`), out);
+    assert.deepEqual(fs.readdirSync(home), [], `${out}: HOME must stay empty`);
+  }
+  // preview itself and a folder inside it are fine
+  const dir = makeCopy();
+  assert.equal(run(dir, [FIXTURE, '--offline', '--out', path.join(dir, 'preview/deep')]).status, 0);
+  assert.ok(fs.existsSync(path.join(dir, 'preview/deep/index.html')));
+});
+
+test('a color cache inside the repo (outside preview/) is refused', () => {
+  const dir = makeCopy();
+  for (const inside of ['cache.json', 'content/spine-colors.json', 'tests/c.json']) {
+    const r = run(dir, [FIXTURE, '--offline', '--cache', path.join(dir, inside)]);
+    assert.equal(r.status, 1, inside);
+    assert.match(r.stderr, /must not be inside the repo/);
+    assert.ok(!fs.existsSync(path.join(dir, inside)), inside);
+    assert.ok(!fs.existsSync(path.join(dir, 'index.html')));
+  }
+  assert.equal(run(dir, [FIXTURE, '--offline', '--cache', path.join(dir, 'preview/c.json'), '--out', path.join(dir, 'preview')]).status, 0);
+});
+
+test('the color cache is private (0600) on every write, even when the file already existed', () => {
+  const dir = makeCopy();
+  const cache = `${dir}-c.json`;
+  fs.writeFileSync(cache, '{}', { mode: 0o644 });
+  fs.chmodSync(cache, 0o644);
+  const r = run(dir, [FIXTURE, '--offline', '--cache', cache]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(fs.statSync(cache).mode & 0o777, 0o600);
+});
+
+test('error messages and README show the npm form of the flags', () => {
+  const build = fs.readFileSync(path.join(REPO, 'scripts/build.mjs'), 'utf8');
+  assert.ok(build.includes('npm run build -- --allow-empty') && build.includes('npm run build -- --prune'));
+  const readme = fs.readFileSync(path.join(REPO, 'README.md'), 'utf8');
+  assert.match(readme, /npm run build -- --prune/);
+  assert.match(readme, /npm run build -- --allow-empty/);
+  assert.match(readme, /Export from Goodreads once before your first `npm run build`/);
 });

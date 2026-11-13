@@ -34,9 +34,18 @@ import { parseEssay, applyEssayFooter } from '../src/site.mjs';
 import { essayFooterLink } from '../src/render.mjs';
 import { fillColorCache, sipsAvailable } from '../src/cover.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = fs.realpathSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'));
 const DEFAULT_CSV = path.join(os.homedir(), '.agent-fleet', 'goodreads', 'goodreads_library_export.csv');
 const DEFAULT_CACHE = path.join(os.homedir(), '.agent-fleet', 'goodreads', 'spine-colors.json');
+
+// A path with symlinks resolved, even if the file does not exist yet (the nearest existing folder is resolved).
+function realish(p) {
+  const abs = path.resolve(p);
+  const tail = [];
+  let cur = abs;
+  while (!fs.existsSync(cur) && path.dirname(cur) !== cur) { tail.unshift(path.basename(cur)); cur = path.dirname(cur); }
+  return path.join(fs.realpathSync(cur), ...tail);
+}
 
 function readJson(rel, fallback) {
   const file = path.resolve(ROOT, rel);
@@ -108,15 +117,25 @@ async function main() {
   if (!values['--cache'] && !isRealCsv) {
     throw new Error('This CSV is not your real export, so I will not use your real color cache. Add --cache <file> (npm run build:sample does this for you).');
   }
-  const cachePath = path.resolve(values['--cache'] ?? DEFAULT_CACHE);
-  const outDir = path.resolve(values['--out'] ?? ROOT);
+  const cachePath = realish(values['--cache'] ?? DEFAULT_CACHE);
+  const outDir = realish(values['--out'] ?? ROOT);
+  // Where files may go. --out may only point at preview/ (or inside it) so a typo can never overwrite
+  // other folders; a cache may not live inside the repo (except in preview/), so ISBNs are never committed.
+  const within = (child, parent) => { const r = path.relative(parent, child); return r === '' || (!r.startsWith('..') && !path.isAbsolute(r)); };
+  const previewDir = path.join(ROOT, 'preview');
+  if (values['--out'] && !within(outDir, previewDir)) {
+    throw new Error(`--out may only be the preview folder (or a folder inside it): ${previewDir}\nNothing was changed.`);
+  }
+  if (within(cachePath, ROOT) && !within(cachePath, previewDir) && cachePath !== realish(DEFAULT_CACHE)) {
+    throw new Error(`The color cache must not be inside the repo (except in preview/), so your ISBNs are never committed: ${cachePath}\nNothing was changed.`);
+  }
   const csvText = fs.readFileSync(csvPath, 'utf8');
 
   // Stop before writing anything if this does not look like a Goodreads library export.
   const header = (parseCsv(csvText)[0] ?? []).map((h) => h.trim());
   const missing = ['Exclusive Shelf', 'Book Id'].filter((c) => !header.includes(c));
   if (missing.length && !flags.has('--allow-empty')) {
-    throw new Error(`The CSV has no "${missing.join('" or "')}" column, so it does not look like a Goodreads library export (wrong file?). Nothing was changed. Pass --allow-empty to build anyway.`);
+    throw new Error(`The CSV has no "${missing.join('" or "')}" column, so it does not look like a Goodreads library export (wrong file?). Nothing was changed. Pass --allow-empty to build anyway (with npm: npm run build -- --allow-empty).`);
   }
 
   const extras = readJson('content/books-extra.json', {});
@@ -126,7 +145,7 @@ async function main() {
   const books = rowsToBooks(csvToObjects(csvText));
   console.log(`Read ${books.length} books from the "read" shelf.`);
   if (books.length === 0 && !flags.has('--allow-empty')) {
-    throw new Error('No books on the "read" shelf were found in that CSV (wrong file, or an empty library?). Nothing was changed. Pass --allow-empty to build anyway.');
+    throw new Error('No books on the "read" shelf were found in that CSV (wrong file, or an empty library?). Nothing was changed. Pass --allow-empty to build anyway (with npm: npm run build -- --allow-empty).');
   }
 
   let offline = flags.has('--offline');
@@ -147,7 +166,7 @@ async function main() {
   const pruned = Object.fromEntries(Object.entries(filled.cache).filter(([isbn]) => current.has(isbn)).sort(([a], [b]) => a.localeCompare(b)));
   const dropped = Object.keys(cache).filter((isbn) => !(isbn in pruned)).length;
   if (dropped > 0 && dropped > Object.keys(cache).length / 2 && !flags.has('--prune')) {
-    throw new Error(`This build would forget ${dropped} of the ${Object.keys(cache).length} cached cover colors (a different or damaged CSV?). Nothing was changed. Pass --prune if that is what you want.`);
+    throw new Error(`This build would forget ${dropped} of the ${Object.keys(cache).length} cached cover colors (a different or damaged CSV?). Nothing was changed. Pass --prune if that is what you want (with npm: npm run build -- --prune).`);
   }
 
   // ---- from here on we write (everything above only reads) ----
@@ -163,6 +182,7 @@ async function main() {
 
   fs.mkdirSync(path.dirname(cachePath), { recursive: true });
   fs.writeFileSync(cachePath, JSON.stringify(pruned, null, 2) + '\n', { mode: 0o600 });
+  fs.chmodSync(cachePath, 0o600); // the mode above only applies to a NEW file, so set it on every write
 
   if (outDir !== ROOT) fs.cpSync(path.join(ROOT, 'assets'), path.join(outDir, 'assets'), { recursive: true });
   fs.mkdirSync(path.join(outDir, 'projects'), { recursive: true });

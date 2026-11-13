@@ -17,7 +17,7 @@ const FIXTURE = path.join(REPO, 'tests/fixtures/sample-goodreads.csv');
 
 // Copy only what the build needs into a temp folder.
 const made = [];
-after(() => { for (const d of made) fs.rmSync(d, { recursive: true, force: true }); });
+after(() => { for (const d of made) for (const x of [d, `${d}-cache.json`]) fs.rmSync(x, { recursive: true, force: true }); });
 function makeCopy() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'site-copy-'));
   made.push(dir);
@@ -40,7 +40,7 @@ globalThis.fetch = async (url) => { fs.appendFileSync(${JSON.stringify(path.join
 function runBuild(dir, csv, flags = [], { trap } = {}) {
   assert.ok(csv && path.isAbsolute(csv), 'tests must always pass an explicit absolute CSV path');
   // any CSV other than the real default needs an explicit --cache; keep it inside the temp folder
-  const cacheFlag = flags.includes('--cache') ? [] : ['--cache', path.join(dir, 'cache.json')];
+  const cacheFlag = flags.includes('--cache') ? [] : ['--cache', `${dir}-cache.json`];
   const args = [...(trap ? ['--import', trap] : []), path.join(dir, 'scripts/build.mjs'), csv, ...cacheFlag, ...flags];
   return spawnSync(process.execPath, args, { cwd: dir, encoding: 'utf8', env: { ...process.env, HOME: dir } });
 }
@@ -84,7 +84,7 @@ test('control: without --offline the trap DOES see fetches for ISBNs not in the 
   const log = fs.readFileSync(path.join(dir, 'fetch.log'), 'utf8');
   assert.match(log, /^https:\/\/covers\.openlibrary\.org\/b\/isbn\//m);
   // network errors are not cached: the cache file stays empty so the next build retries
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'cache.json'), 'utf8')), {});
+  assert.deepEqual(JSON.parse(fs.readFileSync(`${dir}-cache.json`, 'utf8')), {});
   assert.match(r.stdout, /failed \(will retry next build\)/);
 }, { timeout: 120_000 });
 
